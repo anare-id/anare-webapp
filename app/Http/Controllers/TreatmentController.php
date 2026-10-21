@@ -2,100 +2,101 @@
 
 namespace App\Http\Controllers;
 
-use App\Support\LocalizedContent;
-use Illuminate\Http\RedirectResponse;
+use App\Models\Treatment;
+use App\Services\WebsiteContent;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\View\View;
 
 class TreatmentController extends Controller
 {
     protected string $catalog = 'skin';
 
-    protected function setting(string $key, mixed $default = null): mixed
+    public function __construct(private readonly WebsiteContent $website)
     {
-        return config($this->catalog.'.'.$key, $default);
     }
 
-    protected function pageData(): array
+    private function pageData(): array
     {
         return [
             'serviceKey' => $this->catalog,
-            'serviceName' => $this->setting('name'),
-            'heroTitle' => LocalizedContent::text('catalog.'.$this->catalog.'.title', $this->setting('hero_title')),
-            'heroDescription' => $this->setting('hero_description'),
+            'serviceName' => $this->website->text($this->catalog, 'name'),
+            'heroTitle' => $this->website->text($this->catalog, 'title'),
+            'heroDescription' => $this->website->text($this->catalog, 'description'),
+            'heroSlides' => $this->website->heroes($this->catalog),
         ];
+    }
+
+    private function treatments(): Builder
+    {
+        return Treatment::published()->with('category')->where('service', $this->catalog)->where('legacy', false);
+    }
+
+    private function item(Treatment $treatment): array
+    {
+        $item = $this->website->localize($treatment, ['title', 'description', 'subtitle', 'duration', 'pre', 'post', 'downtime']);
+        $item['name'] = $item['title'];
+        $item['category'] = $treatment->category?->slug;
+        $item['catalog_image'] = $item['catalog_image'] ?: $item['image'];
+        return $item;
     }
 
     public function index(Request $request): View
     {
-        $categories = $this->setting('categories');
-        $categories = array_map(fn (string $label, string $key) => LocalizedContent::text('categories.'.$key, $label), $categories, array_keys($categories));
-        $categories = array_combine(array_keys($this->setting('categories')), $categories);
-        $default = $this->setting('default_category', array_key_first($categories));
+        $categories = $this->website->categories($this->catalog);
+        $default = array_key_exists('all', $categories) ? 'all' : array_key_first($categories);
         $category = $request->query('category', $default);
-        if (is_string($category)) $category = $this->setting('category_aliases', [])[$category] ?? $category;
-        abort_unless(is_string($category) && isset($categories[$category]), 404);
-
+        abort_unless(($category === null && $categories === []) || (is_string($category) && array_key_exists($category, $categories)), 404);
         $page = filter_var($request->query('page', 1), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
         abort_if($page === false, 404);
 
-        $items = collect($this->setting('treatments'))
-            ->map(fn (array $item, string $slug) => LocalizedContent::treatment($this->catalog, ['slug' => $slug, ...$item]));
-        if ($category !== 'all') $items = $items->where('category', $category);
-        $items = $items->values();
-
-        $perPage = max(1, (int) $this->setting('per_page', 6));
-        $lastPage = max(1, (int) ceil($items->count() / $perPage));
-        abort_if($page > $lastPage, 404);
-
-        $treatments = new LengthAwarePaginator(
-            $items->forPage($page, $perPage)->values(), $items->count(), $perPage, $page,
-            ['path' => route($this->catalog), 'query' => ['category' => $category], 'fragment' => 'treatments'],
-        );
-        $slots = max(1, (int) $this->setting('pagination_slots', 5));
-        $start = max(1, min($page - intdiv($slots, 2), max(1, $lastPage - $slots + 1)));
+        $query = $this->treatments();
+        if ($category !== null && $category !== 'all') {
+            $query->whereHas('category', fn (Builder $query): Builder => $query->where('slug', $category));
+        }
+        $treatments = $query->orderBy('sort_order')->orderBy('id')
+            ->paginate(max(1, (int) $this->website->setting($this->catalog, 'per_page', 6)));
+        abort_if($page > $treatments->lastPage(), 404);
+        $treatments->appends(['category' => $category])->fragment('treatments');
+        $treatments->through(fn (Treatment $treatment): array => $this->item($treatment));
+        $slots = min(5, $treatments->lastPage());
+        $start = max(1, min($page - intdiv($slots, 2), $treatments->lastPage() - $slots + 1));
 
         return view('pages.treatments.catalog', [
-            ...$this->pageData(),
-            'categories' => $categories,
-            'activeCategory' => $category,
-            'defaultCategory' => $default,
-            'treatments' => $treatments,
-            'pageNumbers' => range($start, $start + $slots - 1),
-            'showPagination' => $this->setting('show_pagination', true) || $treatments->hasPages(),
+            ...$this->pageData(), 'categories' => $categories, 'activeCategory' => $category,
+            'defaultCategory' => $default, 'treatments' => $treatments,
+            'pageNumbers' => range($start, $start + $slots - 1), 'showPagination' => $treatments->hasPages(),
         ]);
     }
 
-    public function show(Request $request, string $slug): View|RedirectResponse
+    public function show(Request $request, string $slug): View
     {
-        $aliases = $this->setting('aliases', []);
-        if (isset($aliases[$slug])) {
-            return redirect()->route($this->catalog.'.detail', ['slug' => $aliases[$slug]], 301);
+        $record = Treatment::published()->with('category')->where('service', $this->catalog)->where('slug', $slug)->firstOrFail();
+        $treatment = $this->item($record);
+        $categories = $this->website->categories($this->catalog);
+        $default = array_key_exists('all', $categories) ? 'all' : array_key_first($categories);
+        $category = $request->query('category', $record->category?->slug ?? $default);
+        if (!is_string($category) || !array_key_exists($category, $categories)) {
+            $category = $default;
+        }
+        $query = $this->treatments();
+        if ($category !== null && $category !== 'all') {
+            $query->whereHas('category', fn (Builder $query): Builder => $query->where('slug', $category));
+        }
+        $page = filter_var($request->query('page', 1), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: 1;
+        $lastPage = max(1, (int) ceil($query->count() / max(1, (int) $this->website->setting($this->catalog, 'per_page', 6))));
+        $conditions = [];
+        foreach (['pre', 'post', 'downtime'] as $key) {
+            $conditions[__('site.treatment.conditions.'.$key.'.label')] = $treatment[$key];
         }
 
-        $items = [...$this->setting('legacy_treatments', []), ...$this->setting('treatments')];
-        abort_unless(isset($items[$slug]), 404);
-        $treatment = LocalizedContent::treatment($this->catalog, ['slug' => $slug, ...$items[$slug]]);
-        $default = $this->setting('default_category', $treatment['category']);
-        $category = $request->query('category', $default);
-        if (is_string($category)) $category = $this->setting('category_aliases', [])[$category] ?? $category;
-        if (!is_string($category) || !array_key_exists($category, $this->setting('categories'))) $category = $default;
-
-        $page = filter_var($request->query('page', 1), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: 1;
-        $listed = $this->setting('treatments');
-        $total = $category === 'all' ? count($listed) : collect($listed)->where('category', $category)->count();
-        $lastPage = max(1, (int) ceil($total / max(1, (int) $this->setting('per_page', 6))));
-
-        $conditions = $treatment['conditions'] ?? collect(['pre', 'post', 'downtime'])->mapWithKeys(fn (string $key) => [
-            __('site.treatment.conditions.'.$key.'.label') => __('site.treatment.conditions.'.$key.'.body', ['service' => $this->setting('name')]),
-        ])->all();
-
         return view('pages.treatments.detail', [
-            ...$this->pageData(),
-            'treatment' => $treatment,
+            ...$this->pageData(), 'treatment' => $treatment,
             'backUrl' => route($this->catalog, ['category' => $category, 'page' => min($page, $lastPage)]).'#treatments',
-            'comparison' => $treatment['comparison'] ?? $this->setting('comparison'),
+            'comparison' => [
+                'before' => $record->comparison_before, 'after' => $record->comparison_after,
+                'illustrative' => $record->comparison_illustrative, 'image_position' => $record->comparison_position,
+            ],
             'conditions' => $conditions,
         ]);
     }

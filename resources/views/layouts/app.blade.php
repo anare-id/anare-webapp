@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Anare Clinic') | Anare Clinic</title>
+    <title>@yield('title', $website->text('contact', 'name')) | {{ $website->text('contact', 'name') }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap">
@@ -17,7 +17,7 @@
     <header class="site-header">
         <div class="nav-shell">
             <a class="logo" href="{{ route('home') }}" aria-label="{{ __('site.nav.home_label') }}">
-                <img class="logo-default" src="{{ asset('images/'.(request()->routeIs('shape', 'shape.*') ? 'logo-hitam.png' : 'logo-biru.png')) }}" alt="Anare Clinic" width="1080" height="1080">
+                <img class="logo-default" src="{{ asset('images/'.(request()->routeIs('shape', 'shape.*') ? 'logo-hitam.png' : 'logo-biru.png')) }}" alt="{{ $website->text('contact', 'name') }}" width="1080" height="1080">
                 <img class="logo-light" src="{{ asset('images/logo-putih.png') }}" alt="" aria-hidden="true" width="1254" height="1254">
             </a>
             <nav id="primary-navigation" class="nav-links" aria-label="{{ __('site.nav.label') }}">

@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\GoogleReviews;
+use App\Services\WebsiteContent;
 use Illuminate\Http\JsonResponse;
 
 class GoogleReviewsController extends Controller
 {
-    public function __invoke(GoogleReviews $reviews): JsonResponse
+    public function __invoke(WebsiteContent $website): JsonResponse
     {
-        $feed = $reviews->latest();
+        $feed = $website->reviews();
 
         return response()->json([
             'mode' => $feed['reviews'] ? 'reviews' : 'empty',

@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "D:\\PC_SYIHAB\\project\\Outside\\anare-webapp\\logs\\.ca30341861429d82b7b85ebae0141c0b278279b8-audit.json",
+    "files": [
+        {
+            "date": 1792558373933,
+            "name": "D:\\PC_SYIHAB\\project\\Outside\\anare-webapp\\logs\\application-2026-10-21.log",
+            "hash": "05a3443b6145c4017424d3bc6930dcbe932ddd323c515b25d263d9cb5aa1818b"
+        }
+    ],
+    "hashType": "sha256"
+}

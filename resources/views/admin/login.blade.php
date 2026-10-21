@@ -23,13 +23,11 @@
                     @csrf
                     <label for="username">Username</label>
                     <input id="username" name="username" placeholder="Masukkan username" value="{{ old('username') }}" autocomplete="username" required maxlength="100" @if($errors->has('username')) aria-invalid="true" @endif>
-                    <div class="password-label"><label for="password">Kata Sandi</label><button type="button" class="text-link" data-login-help>Lupa kata sandi?</button></div>
+                    <div class="password-label"><label for="password">Kata Sandi</label></div>
                     <div class="password-input"><input id="password" name="password" type="password" placeholder="Masukkan kata sandi" autocomplete="current-password" required maxlength="100"><button class="password-toggle" type="button" data-password-toggle aria-label="Tampilkan kata sandi" aria-pressed="false"><svg class="icon"><use href="#a-eye"/></svg></button></div>
                     <button type="submit" class="button button-dark login-submit">Masuk <svg class="icon"><use href="#a-arrow"/></svg></button>
                 </form>
             </section>
-            <div class="demo-credentials"><span class="demo-label"><span class="status-dot"></span> AKUN DEMO</span><p>Username <button type="button" data-fill-login title="Isi akun demo"><strong>admin</strong></button><span>·</span> Kata sandi <strong>anare123</strong></p><small>Gunakan akun ini untuk menjelajahi tampilan CMS.</small></div>
-            <p class="login-help" data-login-help-text role="status" hidden>Ini akun demo. Gunakan username <strong>admin</strong> dan kata sandi <strong>anare123</strong>, atau klik username untuk mengisi form.</p>
         </div>
     </main>
     <footer class="login-footer">ANARE CLINIC <span>Content Management System</span><a href="{{ route('home') }}">Kembali ke website <svg class="icon"><use href="#a-external"/></svg></a></footer>

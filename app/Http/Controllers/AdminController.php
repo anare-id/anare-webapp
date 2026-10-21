@@ -2,47 +2,59 @@
 
 namespace App\Http\Controllers;
 
-use App\Support\AdminDemoContent;
+use App\Services\CmsContent;
+use App\Services\CmsAccess;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
 
 class AdminController extends Controller
 {
-    public function login(Request $request)
+    public function login(Request $request): Response|RedirectResponse
     {
-        if ($request->session()->get('admin_demo_authenticated')) {
-            return redirect()->route('admin.dashboard');
+        if (Auth::check() && CmsAccess::can($request->user(), 'admin.access')) {
+            return redirect()->to(CmsAccess::landing($request->user()));
+        }
+        if (Auth::check()) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
         }
 
         return response()->view('admin.login')->header('Cache-Control', 'no-store, private');
     }
 
-    public function authenticate(Request $request)
+    public function authenticate(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
             'username' => ['required', 'string', 'max:100'],
-            'password' => ['required', 'string', 'max:100'],
+            'password' => ['required', 'string', 'max:4096'],
         ]);
 
-        if ($credentials['username'] !== 'admin' || $credentials['password'] !== 'anare123') {
-            return back()->withErrors(['username' => 'Username atau kata sandi tidak sesuai. Silakan gunakan akun demo di bawah.'])->onlyInput('username');
+        if (!Auth::attempt($credentials) || !CmsAccess::can($request->user(), 'admin.access')) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return back()->withErrors(['username' => 'Username atau kata sandi tidak sesuai.'])->onlyInput('username');
         }
 
         $request->session()->regenerate();
-        $request->session()->put('admin_demo_authenticated', true);
 
-        return redirect()->route('admin.dashboard');
+        return redirect()->to(CmsAccess::landing($request->user()));
     }
 
-    public function logout(Request $request)
+    public function logout(Request $request): RedirectResponse
     {
-        $request->session()->forget('admin_demo_authenticated');
-        $request->session()->regenerate();
+        Auth::logout();
+        $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return redirect()->route('admin.login')->with('admin_message', 'Kamu berhasil keluar dari panel admin.');
     }
 
-    public function index(string $section = 'dashboard')
+    public function index(Request $request, string $section = 'dashboard'): View
     {
         $sections = [
             'dashboard' => ['title' => 'Dashboard', 'description' => 'Semua konten Anare, dalam satu tempat.'],
@@ -54,11 +66,12 @@ class AdminController extends Controller
             'pengaturan' => ['title' => 'Website Settings', 'description' => 'Atur identitas, kontak, dan akun sosial website.'],
         ];
         abort_unless(isset($sections[$section]), 404);
+        abort_unless(CmsAccess::can($request->user(), CmsAccess::section($section)), 403);
 
         return view('admin.workspace', [
             'section' => $section,
             'page' => $sections[$section],
-            'seed' => AdminDemoContent::make(),
+            'seed' => app(CmsContent::class)->state($request->user()),
         ]);
     }
 }

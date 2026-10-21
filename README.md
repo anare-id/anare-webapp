@@ -1,168 +1,185 @@
-# Anare Clinic — Laravel Blade Website
+# Anare Clinic — Laravel CMS
 
-Website klinik dengan Laravel 12, Blade, CSS, dan JavaScript vanilla. Proyek ini awalnya hanya berisi overlay frontend; bootstrap Laravel dan dependensi Composer sekarang sudah tersedia sehingga dapat dijalankan langsung dari folder ini.
+Laravel 12, Blade, CSS, dan JavaScript vanilla. Konten website dan panel admin menggunakan database MariaDB/MySQL. Node.js dan build frontend tidak diperlukan.
 
-## Kebutuhan lokal
+## Menjalankan di komputer ini
 
-- PHP 8.2+ dan Composer 2.
-- Ekstensi PHP yang dibutuhkan Laravel, terutama `fileinfo`, `mbstring`, `openssl`, dan `dom`. Aktifkan `zip` agar Composer dapat mengekstrak paket tanpa alat tambahan.
-- Tidak membutuhkan Node.js, npm, database, migrasi, atau queue worker untuk demo saat ini.
-- Internet diperlukan untuk instalasi dependensi, Google Fonts, Google Maps, dan konten Instagram.
+Database, `.env`, dependency, migrasi, data awal, akun admin, dan link upload sudah disiapkan.
 
-## Cara menjalankan sendiri di komputer ini
-
-Buka folder `D:\project\anare-webapp` di VS Code, lalu pilih **Terminal > New Terminal**. Jalankan:
+Buka terminal **PowerShell** dari folder proyek:
 
 ```powershell
-cd D:\project\anare-webapp
+cd D:\PC_SYIHAB\project\Outside\anare-webapp
 composer run dev
 ```
 
-Buka **http://127.0.0.1:8000** di browser. Biarkan terminal tetap berjalan selama website digunakan. Untuk menghentikan server, tekan **Ctrl+C** di terminal tersebut.
+- Website: **http://127.0.0.1:8000**
+- Panel: **http://127.0.0.1:8000/admin**
+- Health check: **http://127.0.0.1:8000/up**
 
-Dependensi dan `.env` di folder ini sudah disiapkan. Untuk pemakaian sehari-hari, cukup `composer run dev`; tidak perlu menjalankan setup lagi.
+Pastikan service Windows **MariaDB** berjalan. Biarkan terminal server tetap menyala; `Ctrl+C` menghentikan server. Tidak perlu mengulang setup/migrasi setiap membuka proyek.
 
-## Setup pertama kali
+Jika memakai **Git Bash**, cegah konversi cookie path `/` menjadi path instalasi Git:
 
-Jalankan dari folder proyek:
+```bash
+MSYS2_ENV_CONV_EXCL='*' composer run dev
+```
+
+Jika port 8000 sudah dipakai, server yang ada mungkin masih berjalan. Untuk memakai port lain secara eksplisit:
 
 ```powershell
-composer run setup
-composer run dev
+php artisan serve --host=127.0.0.1 --port=8001
 ```
 
-`composer run setup` menginstal paket dari `composer.lock`, membuat `.env` dari `.env.example` jika belum ada, dan menghasilkan `APP_KEY`. Gunakan untuk setup awal; perintah tersebut menghasilkan ulang key jika dijalankan lagi.
+Sesuaikan `APP_URL` di `.env`. `artisan serve` untuk pengembangan lokal, bukan server production.
 
-Buka **http://127.0.0.1:8000**. Hentikan server yang berjalan di terminal dengan `Ctrl+C`.
+## Database dan Navicat Premium
 
-## Menjalankan kembali
+Koneksi **Anare Clinic Local** sudah disimpan dan dibuka di Navicat. **Test Connection** berhasil; database dan tabel CMS terlihat di aplikasi tersebut.
 
-Jika dependensi dan `.env` sudah tersedia, cukup jalankan:
-
-```powershell
-php artisan serve --host=127.0.0.1 --port=8000
-```
-
-Perintah ini setara dengan `composer run dev`. Jika port 8000 digunakan proses lain, jalankan dengan `--port=8001` dan sesuaikan `APP_URL` di `.env`.
-
-## Konfigurasi
-
-`.env.example` menyertakan konfigurasi frontend tanpa database:
-
-```dotenv
-APP_URL=http://127.0.0.1:8000
-SESSION_DRIVER=file
-CACHE_STORE=file
-QUEUE_CONNECTION=sync
-```
-
-Session, cache, hasil kompilasi Blade, dan log disimpan di `storage/`. Direktori `storage/` dan `bootstrap/cache/` harus dapat ditulis oleh PHP. `.env` dan `vendor/` tidak disertakan dalam version control.
-
-`config/app.php` mengatur nama aplikasi, URL, locale, timezone `Asia/Jakarta`, dan encryption key. Konfigurasi layanan lain menggunakan default Laravel yang membaca variabel `.env`; jika perlu override, tambahkan file konfigurasi di `config/`, bukan mengedit `vendor/`.
-
-## Pilihan bahasa ID / EN
-
-Tombol **ID / EN** tersedia di samping navbar, termasuk pada mobile. Pilihan berlaku untuk halaman utama, katalog/detail Skin dan Shape, dokter/modal, artikel, footer, dan label interaksi. Preferensi tersimpan dalam session serta cookie selama satu tahun, dan tetap digunakan saat berpindah halaman atau membuka sesi baru.
-
-Pergantian bahasa mempertahankan path, query/filter, dan anchor URL. Bahasa default mengikuti `APP_LOCALE` (default `en`). Kamus dapat diedit di `lang/id/site.php` dan `lang/en/site.php`; gunakan key yang sama pada keduanya. Tulisan pada gambar jadwal asli tetap mengikuti aset, dengan ringkasan jadwal Inggris di modal saat EN aktif.
-
-Panduan alur locale, penambahan terjemahan, dan cakupan pengujian tersedia di [docs/LOCALIZATION.md](docs/LOCALIZATION.md).
-
-## Halaman
-
-| URL | Fungsi |
+| Parameter | Nilai |
 | --- | --- |
-| `/` | Home, layanan, dokter, artikel unggulan, galeri, lokasi, dan ulasan |
-| `/skin` | Katalog Anare Skin, delapan kategori, enam treatment, dan pagination |
-| `/shape` | Katalog layanan Shape dengan filter kategori |
-| `/skin/{slug}` | Detail treatment Skin berdasarkan data dan slug, misalnya `/skin/acne-injection` |
-| `/shape/{slug}` | Detail treatment Shape |
-| `/doctors` | Daftar dokter |
-| `/doctors/{slug}` | Profil dokter |
-| `/articles` | Daftar artikel dengan filter kategori |
-| `/articles/{slug}` | Detail artikel |
-| `/language/{locale}` (POST) | Menyimpan pilihan bahasa `id` atau `en` |
-| `/up` | Health check Laravel |
+| Engine lokal | MariaDB 12.3.2 |
+| Host | `127.0.0.1` |
+| Port | `3306` |
+| Database | `anare_clinic` |
+| Username aplikasi | `anare_app` |
+| Password database | `DB_PASSWORD` di `.env`; juga tersimpan pada koneksi Navicat lokal |
+| Character set / collation | `utf8mb4` / `utf8mb4_unicode_ci` |
 
-## Admin CMS demo
+Akun aplikasi hanya diberi akses ke `anare_clinic`, bukan menggunakan root. Password database tidak sama dengan password login panel. Jangan commit `.env`, menyalin password ke kode, atau membagikan file koneksi yang menyertakan password.
 
-Buka **http://127.0.0.1:8000/admin**, lalu masuk dengan username **`admin`** dan kata sandi **`anare123`**.
+Gunakan Navicat untuk melihat data, query, dan backup. Gunakan **Laravel migrations** untuk perubahan struktur; mengubah skema manual di Navicat dapat membuat instalasi lain tidak konsisten.
 
-Panel mengikuti referensi login putih dan CMS sidebar gelap. Menu meliputi Dashboard, Beranda, Anare Skin, Anare Shape, Dokter, Artikel, dan Pengaturan. Konten awal menggunakan data/foto website customer. Editor memiliki tab Indonesia/Inggris, pratinjau, upload gambar lokal, tambah/edit/duplikat/hapus, pencarian, filter, dan pagination.
+## Panel admin
 
-Fitur ini berfokus pada UI: login memakai session dummy dan perubahan konten tersimpan di browser (`localStorage`), tanpa database. Perubahan belum dipublikasikan ke website customer. Detail akses, penyimpanan, kode, serta pengujian tersedia di [docs/ADMIN.md](docs/ADMIN.md).
+Login sekarang memeriksa akun di tabel `users` dengan password hash Laravel; kredensial demo lama tidak digunakan. Akun lokal `admin` sudah dibuat; password acak disampaikan saat setup, tidak ditanam dalam kode atau seeder.
 
-## Lokasi kode utama
+Untuk membuat administrator tambahan dari terminal terpercaya (role default `admin`):
 
-- `routes/web.php`: route frontend dan parameter view.
-- `resources/views/layouts/app.blade.php`: layout bersama, navbar, footer, dan pemuatan font.
-- `public/js/anare.js`: menu mobile, dropdown Services untuk touch/keyboard/mouse, dan filter kategori.
-- `resources/views/pages/`: template halaman aplikasi.
-- `config/skin.php`: data kategori dan treatment Anare Skin.
-- `config/shape.php`: data kategori dan treatment Anare Shape.
-- `config/hero.php`: tiga foto dummy lokal dan interval slideshow untuk tiap hero.
-- `config/doctors.php`: nama, urutan foto, panel jadwal, dan konten modal dokter.
-- `config/social.php`: dua sumber Instagram, konfigurasi API opsional, dan tautan WhatsApp.
-- `lang/id/site.php`, `lang/en/site.php`: kamus konten dan label interaksi Indonesia/Inggris.
-- `app/Http/Middleware/SetLocale.php`, `app/Http/Controllers/LocaleController.php`: pemilihan dan penyimpanan preferensi bahasa.
-- `app/Support/LocalizedContent.php`: terjemahan data treatment dan dokter tanpa mengubah slug.
-- `resources/data/instagram-feed.json`: cache dan provenance postingan Instagram yang telah diambil.
-- `app/Http/Controllers/TreatmentController.php`: kategori, pagination, detail treatment, dan navigasi kembali untuk kedua layanan.
-- `resources/views/pages/treatments/`: template katalog dan detail bersama untuk Skin dan Shape.
-- `resources/views/partials/cards.blade.php`: kartu katalog Shape/legacy.
-- `resources/views/partials/clinic-footer.blade.php`: alamat, jam buka, tiga akun Instagram, dan nomor WhatsApp bersama.
-- `public/css/anare.css`: tema Skin/Shape, komponen, dan responsive styling Home.
-- `resources/views/admin/`, `public/css/admin.css`, `public/js/admin.js`: tampilan dan interaksi CMS demo terpisah.
-- `app/Http/Controllers/AdminController.php`, `app/Support/AdminDemoContent.php`: login/session dummy serta seed data admin dari website customer.
-- `public/images/`: foto dan logo JPG/PNG asli yang disediakan pengguna.
-- `bootstrap/app.php`, `bootstrap/providers.php`, `public/index.php`, `artisan`: bootstrap HTTP dan CLI Laravel.
+```powershell
+php artisan admin:create --role=admin
+```
 
-Penjelasan alur dan isi setiap template tersedia di [docs/CODEBASE.md](docs/CODEBASE.md).
+Isi nama, username unik, email opsional, dan password melalui prompt. Password harus 12–72 karakter, maksimal 72 byte, berisi huruf besar/kecil, angka, dan simbol. Input password tidak ditampilkan.
 
-Panduan data dan UI katalog Skin tersedia di [docs/SKIN.md](docs/SKIN.md).
+| Menu / konten | Penyimpanan |
+| --- | --- |
+| Login administrator | `users` |
+| Dashboard / riwayat perubahan | Agregasi konten dan `activities` |
+| Beranda: slideshow/banner | `hero_slides`, dibedakan berdasarkan section |
+| Beranda: kartu layanan | `services` |
+| Beranda: dokter/artikel unggulan | Flag `featured` pada `doctors` / `articles` |
+| Beranda: ulasan | `reviews`, rating 1–5 |
+| Skin / Shape | `treatments`, relasi `category_id`, dipisahkan kolom `service` |
+| Kategori Skin / Shape / Artikel | `categories`, dipisahkan kolom `group` |
+| Dokter, jadwal, pendidikan, keahlian | `doctors` |
+| Artikel, isi, penulis, tanggal | `articles` |
+| Judul section, pagination, kontak, Maps, Instagram | `site_settings`, per grup pengaturan |
+| Foto upload | File `storage/app/public/cms`; path pada record terkait |
 
-Alur bersama Skin/Shape, palet warna, dan hero komposisi dokter dijelaskan di [docs/TREATMENTS.md](docs/TREATMENTS.md).
+Simpan menulis ke server, bukan `localStorage`. Konten **Dipublikasikan** langsung dibaca website; **Draft** tidak ditampilkan dan URL detailnya mengembalikan 404. Duplikasi menghasilkan draft dengan slug unik. Menghapus kategori yang masih dipakai ditolak.
 
-Panduan hero satu layar, slideshow, dan komposisi enam dokter Beranda tersedia di [docs/HERO.md](docs/HERO.md).
+Konten memiliki kolom Indonesia dan Inggris. Saat EN aktif, nilai Inggris dipakai jika terisi; jika kosong, nilai Indonesia dipakai. Mengubah kolom Indonesia tidak menimpa terjemahan Inggris yang sudah ada. Label UI tetap berasal dari `lang/id/site.php` dan `lang/en/site.php`.
 
-Panduan ukuran/outline dokter tersedia di [docs/DOCTORS-SOCIAL.md](docs/DOCTORS-SOCIAL.md). Layout katalog dan Instagram terbaru dijelaskan di [docs/LATEST-REFERENCE.md](docs/LATEST-REFERENCE.md).
+Upload menerima JPG, PNG, WebP, dan GIF maksimal 2 MB; MIME/ekstensi diverifikasi server. Gambar disimpan sebagai file, bukan base64 di database. Field gambar boleh kosong; website tidak merender gambar rusak jika belum diisi. Penghapusan konten tidak otomatis menghapus file yang mungkin dipakai record lain.
 
-Kartu halaman Doctors membuka modal foto/jadwal, Education, dan Expertise dengan efek zoom. Panduan aset serta pengisian isi tersedia di [docs/DOCTOR-MODALS.md](docs/DOCTOR-MODALS.md).
+Semua endpoint perubahan memakai autentikasi session, pemeriksaan permission Spatie, dan CSRF. Validasi menggunakan FormRequest; penulisan konten dan catatan aktivitas menggunakan transaksi database. Slug unik dan relasi kategori dilindungi constraint database. Tidak ada registrasi publik. Akun tanpa `admin.access` atau akun nonaktif tidak dapat masuk panel meskipun password benar.
 
-Galeri berisi enam foto hasil fetch dari `anareclinic.id` dan `anareshape.id`, dengan cache lokal dan permalink asli. Pembaruan otomatis dapat diaktifkan melalui token masing-masing akun di `.env`.
+### Role dan hak akses
 
-## Verifikasi lokal
+Spatie Laravel Permission 6 dipakai dengan guard session Laravel `web`. Role, permission, dan assignment disimpan pada tabel `roles`, `permissions`, `model_has_roles`, `model_has_permissions`, dan `role_has_permissions`. Tidak ada pengecekan privilege berdasarkan username.
+
+| Role bawaan | Hak akses |
+| --- | --- |
+| `super-admin` | Seluruh konten dan pengelolaan akun/role |
+| `admin` | Kelola, publish, dan hapus konten; pengaturan website; tanpa pengelolaan akun/role |
+| `editor` | Baca, buat, dan edit draft; upload; duplikat konten menjadi draft; tanpa publish/hapus/pengaturan website |
+| `viewer` | Baca konten dan pengaturan saja |
+
+Editor tidak boleh mengubah record yang sudah dipublikasikan, termasuk flag unggulan; mengubah isi live tanpa permission publish akan melewati kontrol publikasi. Perubahan kategori yang dipakai konten live dan pengaturan section juga memerlukan permission publish. Menu/tombol mengikuti akses akun, tetapi server tetap memeriksa semua request langsung dan mengembalikan 403 jika ditolak. State JSON hanya menyertakan modul yang boleh dibaca akun tersebut.
+
+Menu **Akun pengguna** (`/admin/users`, judul Akun Admin) digunakan untuk membuat akun, menetapkan satu role, menonaktifkan akun, atau mengatur ulang password. Menu **Peran & izin** (`/admin/roles`, judul Role & Hak Akses) digunakan untuk mengelola role biasa/custom dan memilih permission per modul. Keduanya khusus akun dengan role `super-admin` dan permission pengelolaan terkait. Menambahkan permission pengelolaan langsung ke akun biasa tidak menjadikannya Super Admin.
+
+Role `super-admin` tidak dapat diubah/dihapus melalui panel. Administrator aktif terakhir dengan role tersebut tidak dapat dinonaktifkan atau diturunkan rolenya. Role yang masih dipakai akun tidak dapat dihapus. Perubahan akun/role dicatat sebagai aktivitas. Akun dinonaktifkan, bukan dihapus, untuk menjaga riwayat perubahan.
+
+Migrasi upgrade memberikan role `super-admin` kepada akun yang sudah ada sebelum RBAC dipasang. Akun baru tidak otomatis mendapat privilege; role harus ditetapkan secara eksplisit. Pada instalasi baru, buat pemilik awal dengan:
+
+```powershell
+php artisan admin:create --role=super-admin
+```
+
+Password login existing tidak diganti oleh migrasi role. Permission bawaan dibuat saat instalasi; menjalankan seeder konten lagi tidak mengembalikan permission custom ke default. Setelah perubahan permission manual melalui SQL/Navicat, jalankan `php artisan permission:cache-reset`; perubahan dari panel menggunakan API Spatie yang mengelola cache-nya.
+
+## Setup di komputer baru
+
+Kebutuhan: PHP 8.2+, Composer 2, MariaDB/MySQL, ekstensi `pdo_mysql`, `fileinfo`, `mbstring`, `openssl`, `dom`, dan `zip`. Tes memakai `pdo_sqlite` untuk database sementara terisolasi; tes upload juga memakai `gd`.
+
+1. Buat database `anare_clinic` berkarakter `utf8mb4` beserta user khusus melalui Navicat atau administrator database.
+2. Dari folder proyek:
+
+   ```powershell
+   composer run setup
+   ```
+
+   Perintah ini menginstal dependency, membuat `.env` jika belum ada, dan menghasilkan `APP_KEY`. Jalankan untuk instalasi awal saja; jangan mengganti key pada instalasi yang sudah dipakai.
+
+3. Isi `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` pada `.env` sesuai server tersebut.
+4. Jalankan:
+
+   ```powershell
+   php artisan migrate --seed
+   php artisan storage:link
+   php artisan admin:create --role=super-admin
+   composer run dev
+   ```
+
+Seeder mengimpor konten/foto existing dari snapshot `database/seeders/data/`, kamus bahasa, dan data ulasan yang sudah diambil. Marker `site_settings._seed` membuat impor hanya berjalan sekali; menjalankan seed lagi **tidak menimpa edit dan tidak menghidupkan kembali konten yang sengaja dihapus**. Jangan gunakan `migrate:fresh` pada database yang berisi data penting.
+
+Session/cache menggunakan file dan queue menggunakan `sync`; tidak memerlukan tabel session/cache atau queue worker. Direktori `storage/` dan `bootstrap/cache/` harus dapat ditulis. Backup **database dan `storage/app/public`** bersama agar foto upload tidak hilang.
+
+## Sumber data dan lokasi kode
+
+- `database/migrations/`: struktur tabel, foreign key, index, dan unique constraint.
+- `database/seeders/DatabaseSeeder.php`, `database/seeders/data/`: impor awal saja, bukan sumber konten runtime.
+- `app/Models/`: model dan relasi Eloquent.
+- `app/Http/Requests/`, `app/Rules/`: validasi konten, kategori, pengaturan, path gambar, dan tautan.
+- `app/Services/CmsEditor.php`: transaksi CRUD, kategori, pengaturan, upload, dan aktivitas.
+- `app/Services/CmsContent.php`, `app/Http/Resources/`: state panel dari database.
+- `app/Services/WebsiteContent.php`: konten terlokalisasi dan pengaturan website per request.
+- `app/Http/Controllers/AdminController.php`, `AdminContentController.php`: autentikasi, halaman panel, endpoint CMS.
+- `app/Http/Controllers/HomeController.php`, `TreatmentController.php`, `WebsiteController.php`: halaman publik berbasis database.
+- `routes/web.php`: rute publik dan CMS yang dilindungi middleware admin.
+- `resources/views/admin/`, `public/js/admin.js`, `public/css/admin.css`: panel dan editor.
+- `resources/views/pages/`, `resources/views/partials/`, `resources/views/layouts/`: website publik.
+- `public/images/`: aset awal; `/storage/` melayani upload melalui `public/storage`.
+- `tests/Feature/CmsTest.php`: pengujian perilaku CMS dengan database SQLite in-memory, tidak menyentuh MariaDB lokal.
+
+Galeri Instagram tetap memakai cache postingan hasil fetch; refresh opsional memerlukan token akun profesional di `.env`. Link akun berasal dari pengaturan CMS. Ulasan kini otoritatif dari CMS; refresh browser tidak menimpa ulasan editor dengan snapshot/API eksternal. Booking tetap berupa tautan WhatsApp, bukan sistem appointment.
+
+## Verifikasi
 
 ```powershell
 composer validate --no-check-publish
 composer check-platform-reqs
+php artisan migrate:status
 php artisan route:list --except-vendor
-php artisan view:cache
-php artisan view:clear
+php artisan test
 ```
 
-Setup lokal telah diverifikasi dengan Laravel 12.69.3, PHP 8.5.7, dan Composer 2.10.1. Pada setup awal, seluruh 19 URL halaman yang ditautkan frontend dan 28 aset lokal yang dirujuk mengembalikan HTTP 200; `/up` mengembalikan HTTP 200; route yang tidak terdaftar mengembalikan HTTP 404.
+Verifikasi lokal: PHP 8.5.6, Composer 2.9.7, Laravel 12.69.3, MariaDB 12.3.2, Spatie Laravel Permission 6.25.0. Migrasi konten dan RBAC berhasil; **40 feature tests / 283 assertions lulus**. Cakupan meliputi login database, permission setiap koleksi, isolasi state per modul, revokasi izin, reset password, akun nonaktif, role custom, pencegahan eskalasi, dan perlindungan Super Admin aktif terakhir. Percobaan coverage sebelumnya tidak tersedia karena runtime tidak memiliki driver coverage; persentase coverage tidak diklaim.
 
-Setelah penyesuaian dengan foto asli dan teks terbaru, sembilan URL yang mencakup seluruh template diuji di browser Edge/Playwright pada lebar 320, 390, 480, 768, 800, 801, 1024, dan 1440px. Seluruh 72 kombinasi lolos pemeriksaan overflow horizontal, teks terpotong, konten kartu bertumpuk, dan gambar rusak. Menu touch, dropdown, Escape, perubahan viewport, filter, font Cormorant Garamond, tautan WhatsApp, dan data kontak juga diverifikasi. Google Maps berhasil menampilkan lokasi klinik ketika bagian peta dibuka. Detail perbaikan tersedia di [docs/UI-CHANGES.md](docs/UI-CHANGES.md).
+Smoke browser mencakup login akun database, artikel baru ID/EN, persistensi setelah reload, publikasi ke halaman detail, draft 404, hapus artikel, upload file nyata dan pemuatan publik, tambah/hapus kategori, serta pengaturan jam operasional per bahasa. Editor treatment, hero, dan dokter berhasil menyimpan konten existing; seluruh 10 koleksi menerima save terautentikasi; request perubahan tanpa CSRF ditolak 419. Data sementara dibersihkan dan pengaturan semula dikembalikan. Delapan template publik diperiksa tanpa gambar rusak/overflow desktop; Home dan panel pengaturan juga diperiksa pada lebar 390px.
 
-Katalog/detail Skin dan layout tablet kemudian diverifikasi melalui server pengguna yang sudah berjalan: delapan URL pada sebelas ukuran 320–1440px, total 88 kombinasi. Pengujian mencakup enam tautan treatment, kategori, accordion, Back to List, data pagination, dan URL tidak valid.
+Smoke RBAC di browser: login akun existing sebagai Super Admin; buat akun Viewer dengan password hash; buat role custom dan buktikan tetap ada setelah reload; Viewer tidak memiliki tombol mutasi dan request langsung mendapat 403; ubah akun menjadi Editor, simpan draft nyata, dan pastikan publish ditolak 403 serta detail draft 404; penurunan Super Admin aktif terakhir ditolak 422. Form akun diperiksa pada lebar 390px tanpa overflow. Draft, akun, dan role verifikasi sementara dibersihkan; akun pemilik existing dan passwordnya tidak berubah.
 
-Slideshow tiga foto beserta header transparan sebelumnya diuji pada 44 kombinasi halaman/viewport. Versi terbaru mempertahankan hero satu layar untuk Beranda/Doctors, sedangkan katalog Skin/Shape memakai header biasa dan banner 420px sesuai screenshot terbaru. Autoplay, loop, kontrol, keyboard, serta swipe tersedia.
+## Troubleshooting
 
-Ukuran siluet dokter dinormalisasi. Outline putih dan tooltip nama sementara hanya muncul saat hover/fokus atau tap. Instagram kini menggunakan enam thumbnail hasil fetch dua akun, dengan endpoint refresh API opsional dan cache. Layout terbaru diperiksa pada 45 kombinasi halaman/viewport, termasuk kegagalan refresh.
+- **Connection refused / SQLSTATE**: cek service MariaDB, port, dan `DB_*` pada `.env`; coba Test Connection di Navicat.
+- **Konfigurasi lama**: `php artisan optimize:clear`.
+- **Foto upload 404**: jalankan `php artisan storage:link`, pastikan file ada di `storage/app/public`.
+- **419 saat save**: reload halaman dan login lagi jika session habis.
+- **Error cookie path Git**: gunakan perintah Git Bash di atas atau terminal PowerShell native.
+- Log aplikasi: `storage/logs/laravel.log`.
 
-Skin/Shape kemudian disatukan pada template katalog/detail yang sama dengan palet biru dan beige–cokelat. Pemeriksaan tambahan mencakup 49 kombinasi halaman/viewport, alur treatment, warna Shape, serta batas bawah dokter yang rapat dengan section. Hero Doctors diawali foto komposisi enam dokter dengan versi portrait tersendiri.
-
-Fitur bilingual kemudian lolos 108 kombinasi halaman/bahasa/viewport pada lebar 320–1440px. Pengujian mencakup persistensi session/cookie, query dan anchor, form tanpa JavaScript, CSRF, validasi redirect, konten treatment, serta label modal/slideshow/menu. Detail tersedia di [docs/LOCALIZATION.md](docs/LOCALIZATION.md).
-
-Jika ada konfigurasi lama yang masih terbaca, jalankan `php artisan optimize:clear`. Log aplikasi berada di `storage/logs/laravel.log`.
-
-## Kondisi fitur saat ini
-
-- Isi layanan, biography dokter, artikel, dan ulasan masih berupa data statis atau placeholder. Nama/jadwal dokter 1–5 mengikuti aset jadwal yang diberikan; dokter 6 ditandai dummy.
-- Galeri Instagram dirender dari cache hasil fetch kedua akun. Cache tanpa token tidak menyegarkan dirinya sendiri; pembaruan otomatis memerlukan token akun profesional masing-masing akun.
-- Tombol booking Home menuju WhatsApp `+628113210288`; belum ada penyimpanan appointment atau admin backend.
-- Slug detail Skin dan Shape divalidasi terhadap konfigurasi masing-masing; kategori dan pagination mengikuti data. Profil dokter memakai data `config/doctors.php`; modal memakai jadwal asli 1–5 dan dokter 6 dummy. Biography/keahlian masih dapat dilengkapi. Artikel masih memakai template demo umum.
-- Katalog Skin saat ini berisi enam treatment Acne; kategori lain dan halaman tambahan aktif setelah datanya ditambahkan. Foto Before/After yang tersedia diberi label Foto ilustrasi.
-- Lokasi memakai embed Google Maps yang interaktif dan tautan untuk membuka Maps.
-- Foto dan logo klinik memakai berkas di `public/images`; foto dokter Beranda mempunyai derivative transparan yang dinormalisasi. Konten Instagram berasal dari provider Instagram. Judul, paragraf, CTA, nama, ulasan, dan footer berupa HTML/Blade yang dapat diedit.
+Data awal masih memuat teks contoh dari website sebelumnya; memindahkan ke database tidak membuat informasi klinisnya otomatis valid. Lengkapi konten melalui panel dan periksa materi medis sebelum dipublikasikan.

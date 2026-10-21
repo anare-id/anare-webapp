@@ -3,12 +3,12 @@
 @section('theme', $serviceKey.' treatment-page '.$serviceKey.'-page')
 @section('body-class', 'treatment-catalog-page')
 @section('content')
-<section class="skin-hero treatment-catalog-hero" aria-labelledby="skin-title" data-hero-carousel data-carousel-interval="{{ config('hero.interval') }}">
+<section class="skin-hero treatment-catalog-hero" aria-labelledby="skin-title" data-hero-carousel data-carousel-interval="{{ $heroInterval }}">
     <div class="skin-hero-content hero-content">
         <h1 id="skin-title">{{ $heroTitle }}</h1>
         <p>{{ $heroDescription }}</p>
     </div>
-    @include('partials.hero-slideshow', ['id' => $serviceKey.'-hero', 'label' => __('site.hero.gallery', ['name' => $serviceName]), 'slides' => config('hero.slides.'.$serviceKey)])
+    @include('partials.hero-slideshow', ['id' => $serviceKey.'-hero', 'label' => __('site.hero.gallery', ['name' => $serviceName]), 'slides' => $heroSlides])
 </section>
 
 <section id="treatments" class="skin-catalog container" aria-label="{{ __('site.catalog.list', ['name' => $serviceName]) }}">
@@ -22,16 +22,16 @@
         <div class="skin-treatment-grid">
             @foreach($treatments as $treatment)
                 <a class="skin-treatment-card" href="{{ route($serviceKey.'.detail', ['slug' => $treatment['slug'], 'category' => $activeCategory, 'page' => $treatments->currentPage()]) }}">
-                    <img src="{{ asset('images/'.($treatment['catalog_image'] ?? $treatment['image'])) }}" alt="{{ __('site.common.at_clinic', ['name' => $treatment['name']]) }}" style="object-position: {{ $treatment['catalog_image_position'] ?? $treatment['image_position'] ?? 'center' }}" width="4000" height="6000" loading="lazy">
+                    @if($treatment['catalog_image'])<img src="{{ asset($treatment['catalog_image']) }}" alt="{{ __('site.common.at_clinic', ['name' => $treatment['name']]) }}" style="object-position: {{ $treatment['catalog_image_position'] ?: $treatment['image_position'] ?: 'center' }}" width="4000" height="6000" loading="lazy">@endif
                     <h2>{{ $treatment['name'] }}@if(!empty($treatment['subtitle']))<span>{{ $treatment['subtitle'] }}</span>@endif</h2>
                 </a>
             @endforeach
         </div>
     @else
         <div class="skin-empty-state" role="status">
-            <h2>{{ $categories[$activeCategory] }}</h2>
+            @if($activeCategory !== null)<h2>{{ $categories[$activeCategory] }}</h2>@endif
             <p>{{ __('site.catalog.empty') }}</p>
-            <a class="button" href="{{ route($serviceKey) }}#treatments">{{ __('site.catalog.show_category', ['category' => $categories[$defaultCategory]]) }}</a>
+            @if($defaultCategory !== null)<a class="button" href="{{ route($serviceKey) }}#treatments">{{ __('site.catalog.show_category', ['category' => $categories[$defaultCategory]]) }}</a>@endif
         </div>
     @endif
 

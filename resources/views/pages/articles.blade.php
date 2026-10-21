@@ -2,25 +2,37 @@
 @section('title', __('site.articles.title'))
 @section('body-class', 'articles-page')
 @section('content')
-@php $photos = ['article.JPG', '045A8509.png', 'IMG_0560.JPG']; @endphp
 <section class="container section">
-    <div class="filters" aria-label="{{ __('site.articles.category_label') }}">
-        <button type="button" class="active" data-filter="all">{{ __('site.articles.all') }}</button>
-        <button type="button" data-filter="skin">{{ __('site.articles.skin') }}</button>
-        <button type="button" data-filter="beauty">{{ __('site.articles.beauty') }}</button>
-    </div>
+    <nav class="filters" aria-label="{{ __('site.articles.category_label') }}">
+        <a href="{{ route('articles') }}" @class(['active' => $activeCategory === 'all']) @if($activeCategory === 'all') aria-current="page" @endif>{{ __('site.articles.all') }}</a>
+        @foreach($categories as $slug => $title)
+            <a href="{{ route('articles', ['category' => $slug]) }}" @class(['active' => $activeCategory === $slug]) @if($activeCategory === $slug) aria-current="page" @endif>{{ $title }}</a>
+        @endforeach
+    </nav>
     <div class="card-grid">
-        @for($i = 1; $i <= 3; $i++)
-            <article class="service-card" data-category="{{ $i === 2 ? 'beauty' : 'skin' }}">
-                <img src="{{ asset('images/'.$photos[$i - 1]) }}" alt="{{ __('site.articles.number', ['number' => $i]) }}" loading="lazy">
+        @forelse($articles as $article)
+            <article class="service-card" data-category="{{ $article['category_slug'] }}">
+                @if($article['image'])<img src="{{ asset($article['image']) }}" alt="{{ $article['title'] }}" loading="lazy">@endif
                 <div class="card-copy">
-                    <small>{{ __('site.articles.wellness') }}</small>
-                    <h3>{{ __('site.articles.number', ['number' => $i]) }}</h3>
-                    <p>{{ __('site.articles.summary') }}</p>
-                    <a class="card-btn" href="{{ url('/articles/article-'.$i) }}">{{ __('site.common.read_more') }} ›</a>
+                    <small>{{ $article['category_title'] }}</small>
+                    @if($article['date'])<time datetime="{{ $article['date'] }}">{{ \Carbon\Carbon::parse($article['date'])->locale(app()->getLocale())->translatedFormat('d F Y') }}</time>@endif
+                    <h3>{{ $article['title'] }}</h3>
+                    <p>{{ $article['description'] }}</p>
+                    <a class="card-btn" href="{{ route('articles.detail', ['slug' => $article['slug']]) }}">{{ __('site.common.read_more') }} ›</a>
                 </div>
             </article>
-        @endfor
+        @empty
+            <p>{{ __('site.catalog.empty') }}</p>
+        @endforelse
     </div>
+    @if($articles->hasPages())
+    <nav class="skin-pagination" aria-label="{{ __('site.catalog.pages') }}">
+        @if($articles->previousPageUrl())<a class="pagination-number pagination-arrow" href="{{ $articles->previousPageUrl() }}" aria-label="{{ __('site.catalog.previous') }}">‹</a>@endif
+        @for($page = max(1, $articles->currentPage() - 2); $page <= min($articles->lastPage(), $articles->currentPage() + 2); $page++)
+            <a href="{{ $articles->url($page) }}" @class(['pagination-number', 'active' => $page === $articles->currentPage()]) @if($page === $articles->currentPage()) aria-current="page" @endif>{{ $page }}</a>
+        @endfor
+        @if($articles->nextPageUrl())<a class="pagination-number pagination-arrow" href="{{ $articles->nextPageUrl() }}" aria-label="{{ __('site.catalog.next') }}">›</a>@endif
+    </nav>
+    @endif
 </section>
 @endsection

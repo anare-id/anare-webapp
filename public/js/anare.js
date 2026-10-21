@@ -134,17 +134,19 @@ document.querySelectorAll('[data-hero-carousel]').forEach(carousel => {
         clone.setAttribute('aria-hidden', 'true');
         clone.inert = true;
         const image = clone.querySelector('img');
-        image.alt = '';
-        image.loading = 'eager';
-        image.fetchPriority = 'low';
+        if (image) {
+            image.alt = '';
+            image.loading = 'eager';
+            image.fetchPriority = 'low';
+        }
         return clone;
     };
     track.prepend(cloneSlide(slides[count - 1]));
     track.append(cloneSlide(slides[0]));
-    slides.forEach(slide => slide.querySelector('img').loading = 'eager');
+    slides.forEach(slide => slide.querySelector('img')?.setAttribute('loading', 'eager'));
 
     const configuredInterval = Number(carousel.dataset.carouselInterval);
-    const interval = Math.max(3000, configuredInterval > 0 ? configuredInterval : 5000);
+    const interval = Math.max(1000, configuredInterval > 0 ? configuredInterval : 5000);
     let current = 0;
     let position = 1;
     let moving = false;
@@ -164,6 +166,7 @@ document.querySelectorAll('[data-hero-carousel]').forEach(carousel => {
         carousel.dataset.activeSlide = String(current);
         slides.forEach((slide, index) => {
             slide.setAttribute('aria-hidden', String(index !== current));
+            slide.inert = index !== current;
         });
         dots.forEach((dot, index) => {
             dot.classList.toggle('active', index === current);
@@ -432,10 +435,6 @@ document.querySelectorAll('[data-google-reviews]').forEach(section => {
             if (!response.ok) throw new Error('Google reviews unavailable');
             const data = await response.json();
             if (typeof data.html !== 'string' || !['reviews', 'empty'].includes(data.mode)) throw new Error('Invalid review response');
-            if (data.mode === 'empty' && content.querySelector('[data-review-id]')) {
-                status.textContent = section.dataset.savedLabel;
-                return;
-            }
             if (content.innerHTML.trim() !== data.html.trim()) {
                 const template = document.createElement('template');
                 template.innerHTML = data.html;

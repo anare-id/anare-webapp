@@ -680,3 +680,27 @@ body.doctor-modal-open { overflow: hidden; }
     .review-footer .review-author { max-width: 56%; font-size: 15px; }
     .review-source { font-size: 10px; }
 }
+
+.hero-slide-content { position: absolute; z-index: 2; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: calc(var(--header-height) + 32px) 8% 100px; color: #fff; text-align: center; text-shadow: 0 1px 8px #0006; }
+.hero-slide-content h2 { margin: 0 0 16px; font-size: clamp(28px, 4vw, 56px); }
+.hero-slide-content p { max-width: 800px; }
+.hero-slide-content .home-book { text-shadow: none; }
+.treatment-catalog-hero .hero-content, .doctors-hero .hero-content { align-self: start; }
+.treatment-catalog-hero .hero-slide-content, .doctors-hero .hero-slide-content { justify-content: end; padding-top: 150px; padding-bottom: 76px; }
+.treatment-catalog-hero .hero-slide-content h2, .doctors-hero .hero-slide-content h2 { font-size: clamp(20px, 2.3vw, 30px); }
+.treatment-catalog-hero .hero-slide-content p, .doctors-hero .hero-slide-content p { font-size: 18px; margin-bottom: 12px; }
+.article-content, .skin-conditions p, .doctor-modal-education p { white-space: pre-line; }
+.filters a { display: inline-flex; align-items: center; min-height: 44px; padding: 10px 24px; border: 1px solid currentColor; border-radius: 999px; }
+.filters a.active { background: var(--ink, #293b4b); color: #fff; }
+.home-doctor-team { grid-template-columns: repeat(var(--featured-doctor-count, 6), minmax(0, 1fr)); grid-auto-rows: clamp(348px, calc(30vw - 72px), 548px); height: auto; }
+@media (min-width: 601px) and (max-width: 1024px) {
+    .home-doctor-team { grid-auto-rows: clamp(248px, calc(48vw - 72px), 428px); height: auto; }
+}
+@media (max-width: 600px) {
+    .home-doctor-team { grid-template-columns: repeat(var(--featured-doctor-mobile-count, 3), minmax(0, 1fr)); grid-auto-rows: auto; }
+    .hero-slide-content { padding: calc(var(--header-height) + 16px) 7% 80px; }
+    .hero-slide-content h2 { font-size: 30px; }
+    .hero-slide-content .home-hero-copy { font-size: 19px; }
+    .treatment-catalog-hero .hero-slide-content, .doctors-hero .hero-slide-content { padding-bottom: 58px; }
+    .treatment-catalog-hero .hero-slide-content p, .doctors-hero .hero-slide-content p { font-size: 15px; }
+}

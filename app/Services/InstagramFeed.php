@@ -10,11 +10,24 @@ use Illuminate\Support\Str;
 
 class InstagramFeed
 {
+    public function __construct(private readonly WebsiteContent $website)
+    {
+    }
+
+    private function accounts(): array
+    {
+        $credentials = array_column(config('social.instagram.accounts', []), null, 'username');
+        return array_map(fn (array $profile): array => [
+            'username' => $profile['username'], 'profile_url' => $profile['url'],
+            'access_token' => $credentials[$profile['username']]['access_token'] ?? '',
+        ], $this->website->socialProfiles());
+    }
+
     public function profiles(): array
     {
         return array_values(array_map(
             fn (array $account) => ['username' => $account['username'], 'profile_url' => $account['profile_url']],
-            config('social.instagram.accounts', []),
+            $this->accounts(),
         ));
     }
 
@@ -33,7 +46,7 @@ class InstagramFeed
     {
         $snapshots = $this->snapshots();
         $buckets = [];
-        foreach (config('social.instagram.accounts', []) as $account) {
+        foreach ($this->accounts() as $account) {
             $posts = $refresh ? $this->fetchAccount($account) : $this->cachedAccount($account);
             $buckets[] = $posts ?: ($snapshots[$account['username']] ?? []);
         }
