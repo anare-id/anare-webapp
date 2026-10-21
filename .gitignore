@@ -1,0 +1,12 @@
+/.env
+/.env.backup
+/.env.*.local
+/vendor/
+/node_modules/
+/public/hot
+/public/storage
+/.phpunit.cache/
+/.phpunit.result.cache
+/storage/*.key
+/storage/logs/local-server*.log
+/docs
