@@ -11,12 +11,13 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Throwable;
 use Illuminate\Validation\ValidationException;
 
 final class CmsEditor
 {
-    public function __construct(private readonly CmsCollections $collections)
+    public function __construct(private readonly CmsCollections $collections, private readonly ImageOptimizer $images)
     {
     }
 
@@ -129,7 +130,11 @@ final class CmsEditor
     public function upload(UploadedFile $image, int $userId): string
     {
         abort_unless(CmsAccess::can($this->actor($userId), 'media.upload'), 403);
-        $path = $image->store('cms', 'public');
+        $optimized = $this->images->encode($image->getPathname());
+        $path = 'cms/'.Str::random(40).'.'.$optimized['extension'];
+        if (!Storage::disk('public')->put($path, $optimized['bytes'])) {
+            throw new \RuntimeException('Gambar gagal disimpan ke storage.');
+        }
         try {
             DB::transaction(fn () => $this->activity($userId, 'Mengunggah foto: '.basename($path)));
         } catch (Throwable $exception) {

@@ -14,7 +14,7 @@ final class CmsRecordResource extends JsonResource
     public function toArray(Request $request): array
     {
         $record = $this->resource;
-        $data = $record->only($record->getFillable());
+        $data = \App\Support\OptimizedImages::record($record->only($record->getFillable()));
         $data['id'] = (string) $record->getKey();
         $data['created_at'] = $record->created_at?->toIso8601String();
         $data['updated_at'] = $record->updated_at?->toIso8601String();

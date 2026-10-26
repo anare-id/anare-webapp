@@ -94,7 +94,7 @@ class TreatmentController extends Controller
             ...$this->pageData(), 'treatment' => $treatment,
             'backUrl' => route($this->catalog, ['category' => $category, 'page' => min($page, $lastPage)]).'#treatments',
             'comparison' => [
-                'before' => $record->comparison_before, 'after' => $record->comparison_after,
+                'before' => \App\Support\OptimizedImages::path($record->comparison_before), 'after' => \App\Support\OptimizedImages::path($record->comparison_after),
                 'illustrative' => $record->comparison_illustrative, 'image_position' => $record->comparison_position,
             ],
             'conditions' => $conditions,

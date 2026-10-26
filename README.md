@@ -88,6 +88,14 @@ Konten memiliki kolom Indonesia dan Inggris. Saat EN aktif, nilai Inggris dipaka
 
 Upload menerima JPG, PNG, WebP, dan GIF maksimal 2 MB; MIME/ekstensi diverifikasi server. Gambar disimpan sebagai file, bukan base64 di database. Field gambar boleh kosong; website tidak merender gambar rusak jika belum diisi. Penghapusan konten tidak otomatis menghapus file yang mungkin dipakai record lain.
 
+### Optimasi gambar otomatis
+
+Upload JPEG dinormalisasi mengikuti orientasi EXIF, diperkecil proporsional ke sisi maksimal 2560px tanpa upscale, dan dikodekan WebP kualitas 88. PNG serta WebP statis memakai WebP lossless tanpa mengurangi dimensi supaya transparansi, logo, dan teks jadwal tetap tajam. GIF dan WebP animasi dipertahankan agar tidak menjadi gambar diam. Jika konversi tidak lebih kecil dan tidak perlu resize/rotasi, file asli yang lebih efisien dipakai. Foto menggunakan kompresi lossy kualitas tinggi: kualitas visual ditargetkan tetap baik, bukan jaminan piksel identik. Upload dibatasi 12 megapiksel dan anggaran memory server selain batas file 2 MB untuk menghindari kehabisan memori saat decode.
+
+`php -d memory_limit=512M artisan images:optimize` membuat salinan ringan untuk aset JPG/PNG existing; sumber asli tidak diubah. Manifest mengarahkan frontend dan galeri CMS ke derivative bernama hash. GitHub Actions menjalankan perintah ini setiap build production sehingga tidak perlu commit hasil generate. Derivative hash memakai cache satu tahun immutable; perubahan isi menghasilkan URL baru. Slideshow memprioritaskan foto pertama, bukan memaksa semua foto menjadi eager.
+
+Pengukuran lokal: 55 aset dioptimalkan; total sumber yang diperiksa 153.546.651 byte menjadi 21.224.778 byte untuk versi tersaji (sekitar 86% lebih kecil). `hero.jpg` turun dari 5.516.328 ke 261.070 byte. Tes mencakup rasio/dimensi, alpha PNG, warna lossless, orientasi EXIF, dan GIF tidak diratakan. Untuk pemakaian lokal setelah checkout baru, jalankan perintah generator di atas.
+
 Semua endpoint perubahan memakai autentikasi session, pemeriksaan permission Spatie, dan CSRF. Validasi menggunakan FormRequest; penulisan konten dan catatan aktivitas menggunakan transaksi database. Slug unik dan relasi kategori dilindungi constraint database. Tidak ada registrasi publik. Akun tanpa `admin.access` atau akun nonaktif tidak dapat masuk panel meskipun password benar.
 
 ### Role dan hak akses

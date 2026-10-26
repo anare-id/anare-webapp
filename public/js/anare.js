@@ -136,14 +136,13 @@ document.querySelectorAll('[data-hero-carousel]').forEach(carousel => {
         const image = clone.querySelector('img');
         if (image) {
             image.alt = '';
-            image.loading = 'eager';
+            image.loading = 'lazy';
             image.fetchPriority = 'low';
         }
         return clone;
     };
     track.prepend(cloneSlide(slides[count - 1]));
     track.append(cloneSlide(slides[0]));
-    slides.forEach(slide => slide.querySelector('img')?.setAttribute('loading', 'eager'));
 
     const configuredInterval = Number(carousel.dataset.carouselInterval);
     const interval = Math.max(1000, configuredInterval > 0 ? configuredInterval : 5000);

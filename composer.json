@@ -5,6 +5,9 @@
     "description": "Anare Clinic website built with Laravel and Blade.",
     "require": {
         "php": "^8.2",
+        "ext-gd": "*",
+        "ext-exif": "*",
+        "intervention/image": "^3.11",
         "laravel/framework": "^12.0",
         "spatie/laravel-permission": "^6.0"
     },
