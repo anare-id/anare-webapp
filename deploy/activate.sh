@@ -6,6 +6,8 @@ ROOT="${ANARE_ROOT:-/home/anaj8418/anare-dev}"
 PHP="${ANARE_PHP:-/usr/local/bin/ea-php84}"
 PUBLIC="${ANARE_PUBLIC:-/home/anaj8418/public_html/anare-dev/current/public}"
 mkdir -p "$ROOT/releases" "$ROOT/shared/storage/app/public" "$ROOT/shared/storage/framework/"{cache/data,sessions,views} "$ROOT/shared/storage/logs"
+chmod 0711 "$ROOT" "$ROOT/shared" "$ROOT/shared/storage" "$ROOT/shared/storage/app"
+chmod 0755 "$ROOT/releases" "$ROOT/shared/storage/app/public"
 exec 9>"$ROOT/deploy.lock"
 flock -n 9 || exit 0
 exec >>"$ROOT/deploy.log" 2>&1
@@ -20,6 +22,7 @@ RELEASE="$ROOT/releases/$SHA"
 [[ ! -e "$RELEASE" ]] || { echo "Release already exists; refusing overwrite: $SHA"; exit 1; }
 mkdir "$RELEASE"
 if tar -tzf "$ARCHIVE" | grep -Eq '(^/|(^|/)\.\.(/|$))'; then echo 'Unsafe archive path'; exit 1; fi
+chmod 0755 "$RELEASE"
 tar -xzf "$ARCHIVE" --no-same-owner -C "$RELEASE"
 [[ -f "$RELEASE/artisan" && -f "$RELEASE/vendor/autoload.php" && -f "$ROOT/shared/.env" ]] || { echo 'Missing release files/environment'; exit 1; }
 ln -s "$ROOT/shared/.env" "$RELEASE/.env"
@@ -43,7 +46,7 @@ if [[ -d "$ROOT/current" && ! -L "$ROOT/current" ]]; then rmdir "$ROOT/current/p
 ln -s "$RELEASE" "$ROOT/current.next"
 mv -Tf "$ROOT/current.next" "$ROOT/current"
 if [[ ! -L "$PUBLIC" ]]; then
-    rmdir "$PUBLIC"
+    mv "$PUBLIC" "$ROOT/public-before-laravel-$(date +%Y%m%d%H%M%S)"
     ln -s "$ROOT/current/public" "$PUBLIC"
 fi
 if ! curl --fail --silent --show-error --max-time 30 --resolve dev.anare.co.id:80:127.0.0.1 http://dev.anare.co.id/up >/dev/null; then
