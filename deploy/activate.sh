@@ -24,6 +24,7 @@ mkdir "$RELEASE"
 if tar -tzf "$ARCHIVE" | grep -Eq '(^/|(^|/)\.\.(/|$))'; then echo 'Unsafe archive path'; exit 1; fi
 chmod 0755 "$RELEASE"
 tar -xzf "$ARCHIVE" --no-same-owner -C "$RELEASE"
+chmod 0755 "$RELEASE"
 find "$RELEASE/public" -type d -exec chmod 0755 {} +
 find "$RELEASE/public" -type f -exec chmod 0644 {} +
 [[ -f "$RELEASE/artisan" && -f "$RELEASE/vendor/autoload.php" && -f "$ROOT/shared/.env" ]] || { echo 'Missing release files/environment'; exit 1; }
