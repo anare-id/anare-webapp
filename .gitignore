@@ -11,3 +11,6 @@
 /storage/*.key
 /storage/logs/local-server*.log
 /docs
+/env
+/database/*.sqlite*
+/public/downloads/

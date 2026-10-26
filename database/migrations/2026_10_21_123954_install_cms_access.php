@@ -13,9 +13,12 @@ use Illuminate\Support\Facades\Schema;
 return new class () extends Migration {
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table): void {
-            $table->boolean('is_active')->default(true);
-        });
+        // MySQL commits DDL before the seeder runs; allow retry after a partial failure.
+        if (!Schema::hasColumn('users', 'is_active')) {
+            Schema::table('users', function (Blueprint $table): void {
+                $table->boolean('is_active')->default(true);
+            });
+        }
         app(CmsAccessSeeder::class)->run();
         // This one-time upgrade preserves access for accounts that existed before RBAC.
         // Accounts created after migration must be assigned a role explicitly.

@@ -1,6 +1,6 @@
 @extends('admin.layout')
 @section('content')
-@if(session('status'))<p class="panel access-message" role="status">{{ session('status') }}</p>@endif
+@if(session('status'))<p class="panel access-message" role="status" data-server-success>{{ session('status') }}</p>@endif
 @if($errors->any() && !$formShown)<div class="form-error" role="alert"><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
 <div class="management-page">
 @if($formShown)
@@ -10,7 +10,7 @@
         <div class="settings-form-footer"><button type="button" class="button button-white" data-dialog-close>Tutup</button><a class="button button-dark" href="{{ route('admin.users.index', ['edit' => $viewing->id]) }}">Edit user</a></div>
     @else
     <p class="management-form-note">Password kosong saat edit mempertahankan password lama. Setiap akun menggunakan satu role.</p>
-    <form class="settings-form" method="POST" action="{{ $editing ? route('admin.users.update', $editing) : route('admin.users.store') }}">
+    <form class="settings-form" data-admin-action method="POST" action="{{ $editing ? route('admin.users.update', $editing) : route('admin.users.store') }}">
         @csrf
         @if($editing) @method('PUT') @endif
         <div class="field-grid">

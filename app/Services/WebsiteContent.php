@@ -89,7 +89,7 @@ class WebsiteContent
         $reviewsUrl = (string) $this->setting('contact', 'maps');
         return [
             'source' => 'cms', 'fetched_at' => null, 'reviews_url' => $reviewsUrl,
-            'reviews' => Review::published()->orderBy('sort_order')->orderBy('id')->get()->map(function (Review $review) use ($reviewsUrl): array {
+            'reviews' => Review::published()->orderBy('sort_order')->orderBy('id')->limit(2)->get()->map(function (Review $review) use ($reviewsUrl): array {
                 $item = $this->localize($review, ['title', 'description']);
                 $initials = collect(preg_split('/\s+/u', trim($item['title']), -1, PREG_SPLIT_NO_EMPTY))->take(2)
                     ->map(fn (string $name): string => mb_substr($name, 0, 1))->implode('');

@@ -3,7 +3,8 @@
     --pale: #e7f0f5;
     --ink: #213b4b;
     --background: #f4f8fa;
-    --footer: #242424;
+    --footer: #898989;
+    --footer-shape: #9b897f;
     --neutral-button: #737373;
     --neutral-button-hover: #5f5f5f;
     --nav-font: 'Cormorant Garamond', Georgia, serif;
@@ -219,6 +220,10 @@ body:has(.anare-home-hero) .nav-shell { width: min(1120px, 77.777778%); }
 
 /* Shared clinic information, using the supplied logo and contact details. */
 .site-footer.home-footer { width: min(1120px, 90%); min-height: 215px; margin: 70px auto 24px; padding: 20px 40px; border-radius: 9px; background: var(--footer); color: #fff; font-family: 'Cormorant Garamond', Georgia, serif; }
+.shape .site-footer.home-footer { background: var(--treatment-footer, var(--footer-shape)); }
+.shape .logo img { object-fit: contain; }
+.shape .logo-light { filter: brightness(0) invert(1); }
+.home-footer .footer-brand-shape img { height: 120px; object-fit: contain; margin-bottom: 8px; }
 body:has(.anare-home-hero) .home-footer { width: min(1120px, 77.777778%); }
 .home-footer-grid { display: grid; grid-template-columns: minmax(0, 1.47fr) minmax(0, 1.12fr) minmax(0, .96fr) minmax(0, .9fr); gap: clamp(16px, 3.472222vw, 50px); }
 .footer-brand { display: block; width: 130px; max-width: 100%; }
@@ -226,12 +231,12 @@ body:has(.anare-home-hero) .home-footer { width: min(1120px, 77.777778%); }
 .home-footer p { margin: 12px 0; color: #ededed; font-size: 16px; line-height: 1.45; }
 .home-footer .footer-address { margin-top: 4px; font-size: 14px; line-height: 1.3; }
 .home-footer h4 { margin: 0 0 12px; font-size: 22px; line-height: 1.25; font-weight: 500; }
-.footer-copyright { display: block; color: #c9c9c9; font-size: 11px; line-height: 1.4; }
+.footer-copyright { display: block; color: #f0f0f0; font-size: 11px; line-height: 1.4; }
 .footer-contact-link { display: flex; align-items: center; gap: 10px; min-height: 32px; max-width: 100%; margin-top: 6px; font-size: 17px; line-height: 1.3; }
 .footer-contact-link > span:last-child { min-width: 0; overflow-wrap: anywhere; }
-.footer-contact-platform { display: block; margin-bottom: 2px; color: #c9c9c9; font-size: 13px; line-height: 1.2; }
+.footer-contact-platform { display: block; margin-bottom: 2px; color: #f0f0f0; font-size: 13px; line-height: 1.2; }
 .footer-contact-link:hover { color: #acd0e6; }
-.footer-icon { display: inline-grid; flex-shrink: 0; place-items: center; width: 28px; height: 28px; border-radius: 6px; background: #fff; color: #242424; }
+.footer-icon { display: inline-grid; flex-shrink: 0; place-items: center; width: 28px; height: 28px; background: transparent; color: inherit; }
 .footer-icon svg { width: 22px; height: 22px; }
 
 @media (max-width: 1024px) and (min-width: 801px) {
@@ -531,18 +536,11 @@ body:has(.anare-home-hero) .home-footer { width: min(1120px, 77.777778%); }
     .site-header, .hero-slider-track, .carousel-dot > span, .home-doctor-photo, .doctor-profile-caption { transition: none; }
 }
 
-/* Latest catalog reference: normal header, compact banner and square photo tiles. */
+/* Catalogs share the full-screen hero; treatment tiles remain square. */
 .skin.treatment-catalog-page { background: var(--catalog-background, #f1f8fb); }
 .shape.treatment-catalog-page { background: var(--catalog-background, #f8f4ef); }
 .treatment-catalog-page .site-header { box-shadow: none; }
 .shape.treatment-page .site-header { background: var(--header-background, #d3c6b4); color: var(--header-text, #211e1a); }
-.treatment-catalog-hero { position: relative; isolation: isolate; display: grid; place-items: center; width: 100%; max-width: none; height: 420px; min-height: 0; margin: 0; padding: 48px 24px; overflow: hidden; touch-action: pan-y pinch-zoom; }
-.treatment-catalog-hero::after { display: none; }
-.treatment-catalog-hero .hero-content { position: relative; z-index: 2; width: min(800px, 100%); padding: 0; color: #fff; text-align: center; }
-.treatment-catalog-hero h1 { margin: 0 0 28px; font-size: 48px; line-height: 1.1; }
-.treatment-catalog-hero p { max-width: 800px; margin: 0 auto; font: 600 28px/1.35 'Cormorant Garamond', Georgia, serif; }
-.treatment-catalog-hero .hero-carousel-controls { opacity: 0; pointer-events: none; transition: opacity 160ms ease; }
-.treatment-catalog-hero:hover .hero-carousel-controls, .treatment-catalog-hero:focus-within .hero-carousel-controls { opacity: 1; pointer-events: auto; }
 .treatment-catalog-page .skin-catalog { padding-block: 48px 24px; }
 .treatment-catalog-page .skin-categories { justify-content: flex-start; gap: 10px; margin-bottom: 40px; }
 .treatment-catalog-page .skin-category-link { flex: 0 0 auto; min-height: 44px; padding: 10px 16px; border: 0; border-radius: 8px; background: #fff; color: var(--treatment-label); font: 500 16px/1.3 'DM Sans', sans-serif; }
@@ -576,16 +574,10 @@ body:has(.anare-home-hero) .home-footer { width: min(1120px, 77.777778%); }
 }
 
 @media (max-width: 800px) {
-    .treatment-catalog-hero { height: 360px; padding: 40px 6%; }
-    .treatment-catalog-hero h1 { font-size: 44px; margin-bottom: 22px; }
-    .treatment-catalog-hero p { font-size: 24px; }
     .treatment-catalog-page .skin-catalog { padding-block: 28px 20px; }
 }
 
 @media (max-width: 600px) {
-    .treatment-catalog-hero { height: auto; min-height: 330px; padding-bottom: 88px; }
-    .treatment-catalog-hero h1 { font-size: 40px; }
-    .treatment-catalog-hero p { font-size: 22px; line-height: 1.3; }
     .treatment-catalog-page .skin-treatment-grid { gap: 24px; }
     .treatment-catalog-page .skin-treatment-card h2 { bottom: 24px; font-size: 32px; }
     .treatment-catalog-page .pagination-number { width: 44px; height: 44px; flex-basis: 44px; }
@@ -654,7 +646,13 @@ body.doctor-modal-open { overflow: hidden; }
 .home-contact-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; }
 .home-contact-column { display: flex; flex-direction: column; min-width: 0; }
 .home-contact-column > h2 { flex-shrink: 0; }
-.home-location-column .home-location-card { flex: 1; min-height: 270px; aspect-ratio: auto; }
+.home-location-column .home-location-card { display: flex; flex-direction: column; flex: 1; min-height: 270px; aspect-ratio: auto; }
+.home-location-photo { position: relative; display: block; flex: 0 0 180px; min-height: 0; overflow: hidden; }
+.home-location-photo > img { width: 100%; height: 100%; object-fit: cover; object-position: center 42%; transition: transform 280ms ease; }
+.home-location-photo:hover > img, .home-location-photo:focus-visible > img { transform: scale(1.025); }
+.home-location-photo > span { position: absolute; inset: auto 0 0; display: flex; align-items: center; justify-content: space-between; padding: 26px 18px 12px; background: linear-gradient(transparent, #17242bd9); color: #fff; font: 500 15px/1.4 'DM Sans', sans-serif; }
+.home-location-map { position: relative; flex: 1; min-height: 220px; }
+.home-location-address { display: flex; align-items: center; min-height: 44px; padding-top: 8px; font-size: 13px; line-height: 1.5; }
 .home-reviews-stack { display: grid; grid-auto-rows: 270px; gap: 20px; }
 .home-reviews-stack .home-review { display: flex; flex-direction: column; height: 270px; min-height: 270px; min-width: 0; margin: 0; padding: 20px; }
 .review-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0; }
@@ -672,6 +670,7 @@ body.doctor-modal-open { overflow: hidden; }
 @media (max-width: 1024px) {
     .home-contact-grid { grid-template-columns: minmax(0, 1fr); }
     .home-location-column .home-location-card { flex: none; min-height: 300px; aspect-ratio: 16 / 9; }
+    .home-location-column .home-location-card:has(.home-location-photo) { height: 480px; min-height: 0; aspect-ratio: auto; }
 }
 @media (max-width: 600px) {
     .home-review .review-text { font-size: 20px; line-height: 1.4; }
@@ -680,15 +679,20 @@ body.doctor-modal-open { overflow: hidden; }
     .review-footer .review-author { max-width: 56%; font-size: 15px; }
     .review-source { font-size: 10px; }
 }
+@media (prefers-reduced-motion: reduce) {
+    .home-location-photo > img { transition: none; }
+    .home-location-photo:hover > img, .home-location-photo:focus-visible > img { transform: none; }
+}
 
 .hero-slide-content { position: absolute; z-index: 2; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: calc(var(--header-height) + 32px) 8% 100px; color: #fff; text-align: center; text-shadow: 0 1px 8px #0006; }
 .hero-slide-content h2 { margin: 0 0 16px; font-size: clamp(28px, 4vw, 56px); }
 .hero-slide-content p { max-width: 800px; }
 .hero-slide-content .home-book { text-shadow: none; }
-.treatment-catalog-hero .hero-content, .doctors-hero .hero-content { align-self: start; }
-.treatment-catalog-hero .hero-slide-content, .doctors-hero .hero-slide-content { justify-content: end; padding-top: 150px; padding-bottom: 76px; }
-.treatment-catalog-hero .hero-slide-content h2, .doctors-hero .hero-slide-content h2 { font-size: clamp(20px, 2.3vw, 30px); }
-.treatment-catalog-hero .hero-slide-content p, .doctors-hero .hero-slide-content p { font-size: 18px; margin-bottom: 12px; }
+.treatment-catalog-hero .hero-content { align-self: center; }
+.doctors-hero .hero-content { align-self: start; }
+.doctors-hero .hero-slide-content { justify-content: end; padding-top: 150px; padding-bottom: 76px; }
+.doctors-hero .hero-slide-content h2 { font-size: clamp(20px, 2.3vw, 30px); }
+.doctors-hero .hero-slide-content p { font-size: 18px; margin-bottom: 12px; }
 .article-content, .skin-conditions p, .doctor-modal-education p { white-space: pre-line; }
 .filters a { display: inline-flex; align-items: center; min-height: 44px; padding: 10px 24px; border: 1px solid currentColor; border-radius: 999px; }
 .filters a.active { background: var(--ink, #293b4b); color: #fff; }
@@ -701,6 +705,6 @@ body.doctor-modal-open { overflow: hidden; }
     .hero-slide-content { padding: calc(var(--header-height) + 16px) 7% 80px; }
     .hero-slide-content h2 { font-size: 30px; }
     .hero-slide-content .home-hero-copy { font-size: 19px; }
-    .treatment-catalog-hero .hero-slide-content, .doctors-hero .hero-slide-content { padding-bottom: 58px; }
-    .treatment-catalog-hero .hero-slide-content p, .doctors-hero .hero-slide-content p { font-size: 15px; }
+    .doctors-hero .hero-slide-content { padding-bottom: 58px; }
+    .doctors-hero .hero-slide-content p { font-size: 15px; }
 }

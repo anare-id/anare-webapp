@@ -8,12 +8,12 @@ Laravel staging tersedia di **https://dev.anare.co.id**. Push ke `main` menjalan
 
 ## Menjalankan di komputer ini
 
-Database, `.env`, dependency, migrasi, data awal, akun admin, dan link upload sudah disiapkan.
+Database MySQL XAMPP, `.env`, dependency, migrasi, data awal CMS, serta empat akun demo per role sudah disiapkan di komputer ini. Lihat bagian **Akun demo per role** untuk login panel.
 
 Buka terminal **PowerShell** dari folder proyek:
 
 ```powershell
-cd D:\PC_SYIHAB\project\Outside\anare-webapp
+cd D:\project\anare-webapp
 composer run dev
 ```
 
@@ -21,7 +21,7 @@ composer run dev
 - Panel: **http://127.0.0.1:8000/admin**
 - Health check: **http://127.0.0.1:8000/up**
 
-Pastikan service Windows **MariaDB** berjalan. Biarkan terminal server tetap menyala; `Ctrl+C` menghentikan server. Tidak perlu mengulang setup/migrasi setiap membuka proyek.
+Pastikan modul **MySQL** di XAMPP Control Panel berjalan. Biarkan terminal server tetap menyala; `Ctrl+C` menghentikan server. Tidak perlu mengulang setup/migrasi setiap membuka proyek.
 
 Jika memakai **Git Bash**, cegah konversi cookie path `/` menjadi path instalasi Git:
 
@@ -37,27 +37,58 @@ php artisan serve --host=127.0.0.1 --port=8001
 
 Sesuaikan `APP_URL` di `.env`. `artisan serve` untuk pengembangan lokal, bukan server production.
 
-## Database dan Navicat Premium
+## Database MySQL XAMPP
 
-Koneksi **Anare Clinic Local** sudah disimpan dan dibuka di Navicat. **Test Connection** berhasil; database dan tabel CMS terlihat di aplikasi tersebut.
+Koneksi aplikasi ke MySQL XAMPP telah diverifikasi. Database `anare_clinic` berisi tabel CMS dan RBAC; akun database `anare_app` menggunakan password yang sudah dikonfigurasi di `.env`.
 
 | Parameter | Nilai |
 | --- | --- |
-| Engine lokal | MariaDB 12.3.2 |
+| Engine lokal | MariaDB 10.4.32, modul MySQL XAMPP |
 | Host | `127.0.0.1` |
 | Port | `3306` |
 | Database | `anare_clinic` |
 | Username aplikasi | `anare_app` |
-| Password database | `DB_PASSWORD` di `.env`; juga tersimpan pada koneksi Navicat lokal |
+| Password database | `DB_PASSWORD` yang sudah ada di `.env` |
 | Character set / collation | `utf8mb4` / `utf8mb4_unicode_ci` |
 
 Akun aplikasi hanya diberi akses ke `anare_clinic`, bukan menggunakan root. Password database tidak sama dengan password login panel. Jangan commit `.env`, menyalin password ke kode, atau membagikan file koneksi yang menyertakan password.
 
 Gunakan Navicat untuk melihat data, query, dan backup. Gunakan **Laravel migrations** untuk perubahan struktur; mengubah skema manual di Navicat dapat membuat instalasi lain tidak konsisten.
 
+PHP CLI aktif adalah `C:\php\php.exe`, dengan konfigurasi `C:\php\php.ini`. Ekstensi `pdo_mysql` sudah diaktifkan. Sesudah perubahan driver PHP, restart development server yang sudah berjalan agar proses server memuat driver baru.
+
+Migrasi dan seeder awal sudah dijalankan. Pembaruan foto lokasi menambahkan migrasi pengisian `contact.location_image` pada JSON pengaturan; jalankan `php artisan migrate` pada instalasi yang diperbarui. File SQLite lama tidak berisi tabel aplikasi, sehingga tidak ada record SQLite yang perlu dipindahkan.
+
+Data awal yang diimpor: 15 treatment (termasuk satu detail legacy Shape), 6 dokter, 3 artikel, 3 ulasan Google, serta 4 role bawaan. Empat akun demo di komputer ini dibuat terpisah melalui `DemoUsersSeeder`. Pengujian menggunakan database sementara terisolasi, PHP XAMPP, dan ekstensi GD per proses:
+
+```powershell
+& "C:\xampp\php\php.exe" -d extension=gd vendor/phpunit/phpunit/phpunit
+```
+
 ## Panel admin
 
-Login memeriksa tabel `users` dengan password hash Laravel, bukan kredensial demo. Pada setup lokal dan dev saat ini tersedia dua akun terpisah: `superadmin` hanya memiliki role `super-admin`, sedangkan `admin` hanya memiliki role `admin`. Password disampaikan langsung kepada pemilik, tidak ditanam dalam kode/seeder. Login keduanya diverifikasi; `superadmin` dapat membuka pengelolaan akun, sedangkan `admin` mendapat HTTP 403 pada pengelolaan akun/role. Kredensial sebelum pemisahan sudah diganti.
+Login memeriksa akun di tabel `users` dengan password hash Laravel. Akun demo di bawah benar-benar tersimpan di MySQL dan memakai hak akses role masing-masing.
+
+### Akun demo per role
+
+Buka **http://127.0.0.1:8000/admin**:
+
+| Role | Username | Password demo |
+| --- | --- | --- |
+| Super Admin | `superadmin` | `SuperAdmin123!` |
+| Admin | `admin` | `AdminDemo123!` |
+| Editor | `editor` | `EditorDemo123!` |
+| Viewer | `viewer` | `ViewerDemo123!` |
+
+Seeder khusus demo lokal dapat dijalankan secara eksplisit:
+
+```powershell
+php artisan db:seed --class=DemoUsersSeeder
+```
+
+Seeder membuat username yang belum ada dan menetapkan satu role. Menjalankannya lagi tidak menggandakan akun atau menimpa password, status aktif, profil, maupun role akun yang sudah ada. Seeder ini terpisah dari `DatabaseSeeder`, sehingga seed konten biasa tidak otomatis membuat akun demo.
+
+Untuk membuat akun pemilik dengan kredensial sendiri pada instalasi baru, gunakan `php artisan admin:create --role=super-admin` dan isi prompt.
 
 Untuk membuat administrator tambahan dari terminal terpercaya (role default `admin`):
 
@@ -83,6 +114,23 @@ Isi nama, username unik, email opsional, dan password melalui prompt. Password h
 | Foto upload | File `storage/app/public/cms`; path pada record terkait |
 
 Simpan menulis ke server, bukan `localStorage`. Konten **Dipublikasikan** langsung dibaca website; **Draft** tidak ditampilkan dan URL detailnya mengembalikan 404. Duplikasi menghasilkan draft dengan slug unik. Menghapus kategori yang masih dipakai ditolak.
+
+Banner katalog Skin/Shape memakai satu judul dan deskripsi dari **Atur halaman** (`site_settings` grup `skin`/`shape`). Foto, urutan, status, dan crop mengikuti `hero_slides`. Teks/CTA masing-masing slide tidak ditumpuk di atas judul katalog; judul slide tetap digunakan sebagai alt foto. Hero Skin/Shape sekarang memakai tinggi satu layar `100svh` (fallback `100vh`), sama seperti Beranda dan Dokter, dengan navbar di atas foto dan kontrol slideshow selalu tersedia. Logo Instagram/WhatsApp di footer tampil tanpa kotak latar putih.
+
+Halaman Shape dan detailnya menggunakan `logo-shape-transparent.png`, hasil penghapusan latar dari aset asli `logo-shape.jpeg`. Header transparan menggunakan versi warna putih melalui CSS; header biasa dan footer memakai warna asli logo. Footer Shape berwarna taupe `#9b897f`, sedangkan Beranda, Dokter, dan Artikel memakai abu-abu `#898989`. Footer Skin mempertahankan tema birunya.
+
+Beranda dan endpoint ulasan hanya menampilkan dua ulasan berstatus dipublikasikan, mengikuti urutan CMS; semua record tetap tersedia di admin. Kartu lokasi menampilkan foto resepsionis Anare Clinic di atas peta. Sumber foto tercatat di `resources/data/google-place-photo.json`. Foto dapat diganti lewat **Pengaturan → Kontak & lokasi → Ubah foto klinik**; path disimpan sebagai `contact.location_image`, divalidasi sebagai gambar lokal, dan tidak menimpa pengaturan kontak lainnya.
+
+### Notifikasi aksi CMS
+
+Setiap tambah, edit, hapus, duplikasi, simpan pengaturan, perubahan dokter pilihan, dan upload menampilkan notifikasi sukses atau gagal. Pesan sukses berasal dari respons server dan menyebutkan tindakan yang selesai. Akun pengguna serta role menggunakan feedback yang sama, termasuk setelah pengalihan halaman.
+
+- **Hijau / Berhasil** untuk tindakan yang selesai; **merah / Gagal** untuk validasi, izin, sesi kedaluwarsa, data tidak ditemukan, pembatasan request, gangguan server, atau koneksi terputus.
+- Pesan validasi juga tampil di form dan menandai kolom terkait. Kegagalan mempertahankan input serta editor agar dapat diperbaiki dan disimpan kembali.
+- Toast tetap berada di atas native dialog, responsif pada mobile, dapat ditutup, dan menggunakan `role="status"` atau `role="alert"`. Timeout 7 detik untuk sukses dan 12 detik untuk gagal; berhenti sementara saat toast di-hover atau mendapat fokus. Maksimal tiga notifikasi tampil bersamaan.
+- Form akun/role tetap mendukung submit biasa tanpa JavaScript, dengan pesan sukses dan validasi server di halaman.
+
+Implementasi ada di `public/js/admin.js`, `public/css/admin.css`, layout admin, dan respons controller CMS. Regresi API diuji di `tests/Feature/CrudFeedbackTest.php`. Suite lengkap lulus **47 tes / 433 assertion**; verifikasi browser mencakup mutasi nyata konten/kategori/akun/role, error HTTP 403/404/419/429/500, network error, respons tidak valid, notifikasi upload dalam dialog, dan fallback tanpa JavaScript. Data sementara verifikasi dibersihkan.
 
 Konten memiliki kolom Indonesia dan Inggris. Saat EN aktif, nilai Inggris dipakai jika terisi; jika kosong, nilai Indonesia dipakai. Mengubah kolom Indonesia tidak menimpa terjemahan Inggris yang sudah ada. Label UI tetap berasal dari `lang/id/site.php` dan `lang/en/site.php`.
 
@@ -191,6 +239,8 @@ php artisan test
 
 Verifikasi lokal: PHP 8.5.6, Composer 2.9.7, Laravel 12.69.3, MariaDB 12.3.2, Spatie Laravel Permission 6.25.0. **51 feature tests / 320 assertions lulus**, termasuk otorisasi detail user tanpa mengekspos hash password, validasi edit yang mempertahankan record/input, filter gabungan, pagination, rename role tanpa kehilangan akses, serta penugasan/pencabutan permission. Browser memverifikasi modal view User/Role/Hak Akses, edit dan simpan, error nama role duplikat tetap di modal, Escape menutup modal, serta layout mobile 390px tanpa overflow. `tests/TestCase.php` menolak tes selain SQLite `:memory:`. Driver coverage belum tersedia.
 
+Verifikasi integrasi terbaru lulus **64 tes / 511 assertion**, termasuk feedback CRUD, empat akun demo, pembatasan dua ulasan, dan foto lokasi. Browser memeriksa 96 kombinasi delapan route, dua bahasa dan enam ukuran layar; mencakup logo/footer Shape, warna footer umum, kartu lokasi/ulasan, pengaturan foto, serta kompatibilitas notifikasi dengan modal Management User. Pengujian dan render visual menggunakan SQLite in-memory; `phpunit.xml` mengisolasi path cache konfigurasi/route agar cache aplikasi lokal tidak dipakai saat tes.
+
 Smoke browser mencakup login akun database, artikel baru ID/EN, persistensi setelah reload, publikasi ke halaman detail, draft 404, hapus artikel, upload file nyata dan pemuatan publik, tambah/hapus kategori, serta pengaturan jam operasional per bahasa. Editor treatment, hero, dan dokter berhasil menyimpan konten existing; seluruh 10 koleksi menerima save terautentikasi; request perubahan tanpa CSRF ditolak 419. Data sementara dibersihkan dan pengaturan semula dikembalikan. Delapan template publik diperiksa tanpa gambar rusak/overflow desktop; Home dan panel pengaturan juga diperiksa pada lebar 390px.
 
 Smoke RBAC di browser: login akun existing sebagai Super Admin; buat akun Viewer dengan password hash; buat role custom dan buktikan tetap ada setelah reload; Viewer tidak memiliki tombol mutasi dan request langsung mendapat 403; ubah akun menjadi Editor, simpan draft nyata, dan pastikan publish ditolak 403 serta detail draft 404; penurunan Super Admin aktif terakhir ditolak 422. Form akun diperiksa pada lebar 390px tanpa overflow. Draft, akun, dan role verifikasi sementara dibersihkan; akun pemilik existing dan passwordnya tidak berubah.
@@ -200,6 +250,8 @@ Verifikasi tabel management: tiga halaman diperiksa pada lebar 390, 768, dan 144
 ## Troubleshooting
 
 - **Connection refused / SQLSTATE**: cek service MariaDB, port, dan `DB_*` pada `.env`; coba Test Connection di Navicat.
+- **SQLSTATE 1045 / Access denied / using password: NO**: pastikan akun MySQL `anare_app` tersedia untuk koneksi lokal, memiliki akses ke `anare_clinic`, dan passwordnya sesuai `DB_PASSWORD` di `.env`. Setelah mengubah kredensial, jalankan `php artisan config:clear` lalu `php artisan config:cache`. Akun MySQL server terpisah dari akun admin CMS dan tidak ikut dibuat hanya dengan mengimpor tabel aplikasi.
+- **Aria checksum pada tabel hak akses**: pada pemulihan lokal terakhir, `mysql.db` telah dicadangkan dan diperbaiki; hak akses aplikasi dipasang ulang. Pemeriksaan tabel sistem dan tabel utama CMS kembali berstatus OK.
 - **Konfigurasi lama**: `php artisan optimize:clear`.
 - **Foto upload 404**: jalankan `php artisan storage:link`, pastikan file ada di `storage/app/public`.
 - **419 saat save**: reload halaman dan login lagi jika session habis.

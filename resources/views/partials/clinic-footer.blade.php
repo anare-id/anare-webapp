@@ -1,7 +1,11 @@
 <div class="home-footer-grid">
     <div class="home-footer-about">
-        <a class="footer-brand" href="{{ route('home') }}" aria-label="{{ __('site.nav.home_label') }}">
-            <img src="{{ asset('images/logo-putih.png') }}" alt="{{ $website->text('contact', 'name') }}" width="1254" height="1254" loading="lazy">
+        <a class="footer-brand {{ request()->routeIs('shape', 'shape.*') ? 'footer-brand-shape' : '' }}" href="{{ route('home') }}" aria-label="{{ __('site.nav.home_label') }}">
+            @if(request()->routeIs('shape', 'shape.*'))
+                <img src="{{ asset('images/logo-shape-transparent.png') }}" alt="Anare Shape" width="951" height="882" loading="lazy">
+            @else
+                <img src="{{ asset('images/logo-putih.png') }}" alt="{{ $website->text('contact', 'name') }}" width="1254" height="1254" loading="lazy">
+            @endif
         </a>
         <p class="footer-address">{{ $website->text('contact', 'address') }}</p>
         <small class="footer-copyright">{{ __('site.copyright') }} © {{ date('Y') }} {{ $website->text('contact', 'name') }}. {{ __('site.footer.rights') }}</small>

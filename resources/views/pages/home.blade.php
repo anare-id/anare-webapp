@@ -84,10 +84,16 @@
             <h2>{{ $website->text('home', 'location_title') }}</h2>
             @if($website->mapEmbedUrl())
             <div class="home-location-card">
-                <iframe title="{{ __('site.home.map_title') }}" src="{{ $website->mapEmbedUrl() }}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+                @if($website->setting('contact', 'location_image'))
+                    <a class="home-location-photo" href="{{ $website->setting('contact', 'maps') ?: $website->mapEmbedUrl() }}" target="_blank" rel="noopener noreferrer">
+                        <img src="{{ asset($website->setting('contact', 'location_image')) }}" alt="{{ __('site.home.location_photo_alt', ['name' => $website->text('contact', 'name')]) }}" width="1000" height="667" loading="lazy" decoding="async">
+                        <span>{{ $website->text('contact', 'name') }} <span aria-hidden="true">↗</span></span>
+                    </a>
+                @endif
+                <div class="home-location-map"><iframe title="{{ __('site.home.map_title') }}" src="{{ $website->mapEmbedUrl() }}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div>
             </div>
             @endif
-            @if($website->setting('contact', 'maps'))<a href="{{ $website->setting('contact', 'maps') }}" target="_blank" rel="noopener noreferrer">{{ $website->text('contact', 'address') }}</a>@endif
+            @if($website->setting('contact', 'maps'))<a class="home-location-address" href="{{ $website->setting('contact', 'maps') }}" target="_blank" rel="noopener noreferrer">{{ $website->text('contact', 'address') }}</a>@endif
         </div>
         <div class="home-contact-column home-reviews-column" data-google-reviews data-reviews-url="{{ route('google.reviews') }}" data-review-source="{{ $reviewFeed['source'] }}" data-loading-label="{{ __('site.reviews.loading') }}" data-selected-label="{{ __('site.reviews.selected') }}" data-saved-label="{{ __('site.reviews.saved') }}">
             <h2>{{ $website->text('home', 'reviews_title') }}</h2>

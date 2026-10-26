@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Rules\WebLink;
+use App\Rules\LocalImage;
 use App\Services\CmsAccess;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -30,6 +31,7 @@ final class SaveSettingsRequest extends FormRequest
                 'whatsapp' => ['sometimes', 'required', 'regex:/^[1-9][0-9]{7,14}$/D'],
                 'maps' => ['sometimes', 'nullable', 'string', 'max:2048', new WebLink()],
                 'map_embed' => ['sometimes', 'nullable', 'url:https', 'max:2048', 'regex:~^https://(?:www\.)?(?:google\.com/maps/embed(?:\?|/)|maps\.google\.com/maps\?)~'],
+                'location_image' => ['sometimes', 'nullable', 'string', 'max:1024', new LocalImage()],
             ],
             'social' => array_fill_keys(['clinic', 'shape', 'skin'], ['sometimes', 'nullable', 'url:https', 'max:2048', new WebLink()]),
             'skin', 'shape' => array_fill_keys(['name', 'name_en', 'title', 'title_en', 'description', 'description_en'], $text) + [

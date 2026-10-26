@@ -6,6 +6,7 @@ return [
     'nav' => ['home' => 'Home', 'services' => 'Services', 'doctors' => 'Doctors', 'articles' => 'Articles', 'label' => 'Main navigation', 'skip' => 'Skip to content', 'home_label' => 'Anare Clinic home', 'languages' => 'Choose language', 'switch_id' => 'Switch to Bahasa Indonesia', 'switch_en' => 'Switch to English'],
     'common' => ['book' => 'Book Appointment', 'detail' => 'See Detail', 'read_more' => 'Read More', 'at_clinic' => ':name at Anare Clinic', 'close_profile' => 'Close profile :name'],
     'home' => [
+        'location_photo_alt' => ':name clinic photo',
         'services' => 'Our Services', 'skin_description' => 'Dermatologist, Laser, Skin and Hair Treatments', 'shape_description' => 'Face and Body Contouring, Skin Tightening, and Slimming',
         'doctors' => 'OUR DOCTORS', 'doctors_intro' => 'Meet the Anare Clinic team, here to support your care journey with attention and a personal approach.', 'doctors_invitation' => 'Click a photo to get to know our doctors.', 'team' => 'Anare Clinic medical team', 'profile' => 'View profile :name',
         'article_title' => 'Article’s Title', 'article_date' => '30 September 2026', 'instagram' => 'Our Instagram', 'location' => 'Our Location', 'clients' => 'Our Happy Clients', 'map_title' => 'Anare Clinic location on Google Maps', 'five_stars' => 'Five stars',

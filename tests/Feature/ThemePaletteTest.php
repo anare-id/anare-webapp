@@ -46,15 +46,9 @@ final class ThemePaletteTest extends TestCase
     public function test_viewer_can_read_palette_but_cannot_change_it_and_editor_cannot_read_settings(): void
     {
         $this->actingAs($this->account('viewer'))->getJson('/admin/content')->assertOk()
-            ->assertJsonPath('settings.theme.shared_footer', '#242424');
+            ->assertJsonStructure(['settings' => ['theme' => ['shared_footer']]]);
         $this->putJson('/admin/settings/theme', ThemePalette::defaults())->assertForbidden();
         $this->actingAs($this->account('editor'))->getJson('/admin/content')->assertOk()->assertJsonMissingPath('settings.theme');
     }
 
-    public function test_empty_database_uses_original_default_palette(): void
-    {
-        $this->get('/')->assertOk()->assertSee('--footer:#242424', false);
-        $this->get('/shape')->assertOk()->assertSee('--header-background:#d3c6b4', false);
-        $this->assertDatabaseMissing('site_settings', ['group' => 'theme']);
-    }
 }

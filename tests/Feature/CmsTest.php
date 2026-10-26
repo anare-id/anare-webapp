@@ -10,6 +10,7 @@ use App\Models\Doctor;
 use App\Models\HeroSlide;
 use App\Models\Review;
 use App\Models\Service;
+use App\Models\SiteSetting;
 use App\Models\Treatment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -277,6 +278,33 @@ final class CmsTest extends TestCase
         $this->getJson('/google/reviews')->assertOk()->assertDontSee('Ulasan terkelola dari database.');
     }
 
+    public function test_home_displays_only_two_published_reviews_while_admin_keeps_every_review(): void
+    {
+        foreach ([['Hidden review', 'draft', 0], ['First review', 'published', 1], ['Second review', 'published', 2], ['Third review', 'published', 3]] as [$title, $status, $order]) {
+            Review::create(['title' => $title, 'description' => 'Review text for '.$title, 'rating' => 5, 'status' => $status, 'sort_order' => $order]);
+        }
+
+        $this->get('/')->assertOk()->assertSee('First review')->assertSee('Second review')
+            ->assertDontSee('Third review')->assertDontSee('Hidden review');
+        $this->getJson('/google/reviews')->assertOk()->assertJsonPath('count', 2)
+            ->assertSee('First review')->assertSee('Second review')->assertDontSee('Third review');
+        $this->actingAs($this->administrator())->getJson('/admin/content')->assertOk()->assertJsonCount(4, 'reviews');
+        $this->assertDatabaseCount('reviews', 4);
+    }
+
+    public function test_location_photo_is_managed_in_contact_settings_and_unsafe_paths_are_rejected(): void
+    {
+        $this->actingAs($this->administrator());
+        $this->putJson('/admin/settings/contact', [
+            'name' => 'Anare Clinic', 'maps' => 'https://maps.google.com/?q=Anare+Clinic',
+            'location_image' => '/images/anare-clinic-location.webp',
+        ])->assertOk();
+        $this->get('/')->assertOk()->assertSee('home-location-photo')->assertSee('anare-clinic-location.webp')->assertSee('home-location-map');
+        $this->putJson('/admin/settings/contact', ['location_image' => 'https://other.example/photo.jpg'])
+            ->assertUnprocessable()->assertJsonValidationErrors('location_image');
+        $this->assertSame('/images/anare-clinic-location.webp', SiteSetting::where('group', 'contact')->firstOrFail()->values['location_image']);
+    }
+
     public function test_hero_publication_and_bilingual_copy_are_read_from_database(): void
     {
         $this->actingAs($this->administrator());
@@ -291,6 +319,45 @@ final class CmsTest extends TestCase
             ->assertOk()->assertSee('Saved hero copy.')->assertSee('Contact Clinic');
         HeroSlide::query()->firstOrFail()->update(['status' => 'draft']);
         $this->get('/')->assertOk()->assertDontSee('Saved hero copy.');
+    }
+
+    public function test_catalog_banner_uses_one_database_backed_heading_without_slide_copy_overlap(): void
+    {
+        foreach (['skin', 'shape'] as $service) {
+            SiteSetting::create(['group' => $service, 'values' => [
+                'name' => 'Anare '.ucfirst($service),
+                'title' => 'Judul katalog '.$service, 'title_en' => ucfirst($service).' catalog title',
+                'description' => 'Deskripsi utama '.$service, 'description_en' => 'Main description for '.$service,
+            ]]);
+            HeroSlide::create([
+                'section' => $service, 'title' => 'Deskripsi foto '.$service, 'title_en' => 'Photo description '.$service,
+                'description' => 'Teks slide yang tidak boleh menimpa judul',
+                'description_en' => 'Slide text must not overlap the page heading',
+                'button' => 'CTA slide', 'url' => '/doctors',
+                'image' => '/images/hero.jpg', 'position' => 'center', 'fit' => 'cover', 'status' => 'published',
+            ]);
+        }
+
+        foreach (['id', 'en'] as $locale) {
+            foreach (['skin', 'shape'] as $service) {
+                $this->app->forgetScopedInstances();
+                $response = $this->withSession(['locale' => $locale])->get('/'.$service)->assertOk();
+                $response->assertSee($locale === 'id' ? 'Judul katalog '.$service : ucfirst($service).' catalog title')
+                    ->assertSee($locale === 'id' ? 'Deskripsi utama '.$service : 'Main description for '.$service)
+                    ->assertSee($locale === 'id' ? 'Deskripsi foto '.$service : 'Photo description '.$service)
+                    ->assertDontSee('hero-slide-content')->assertDontSee('CTA slide')
+                    ->assertDontSee('Teks slide yang tidak boleh menimpa judul')
+                    ->assertDontSee('Slide text must not overlap the page heading');
+            }
+        }
+
+        $setting = SiteSetting::where('group', 'skin')->firstOrFail();
+        $setting->update(['values' => [...$setting->values, 'title_en' => 'Updated catalog heading']]);
+        $this->app->forgetScopedInstances();
+        $this->app['router']->getRoutes()->getByName('skin')->flushController();
+        $this->withSession(['locale' => 'en'])->get('/skin')->assertOk()->assertSee('Updated catalog heading');
+        $this->assertDatabaseCount('hero_slides', 2);
+        $this->assertDatabaseHas('hero_slides', ['section' => 'skin', 'description' => 'Teks slide yang tidak boleh menimpa judul']);
     }
 
     public function test_invalid_settings_do_not_partially_persist(): void

@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\AccountManager;
 use App\Services\CmsContent;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -62,15 +63,24 @@ final class AdminUserController extends Controller
         ]);
     }
 
-    public function store(StoreAdminUserRequest $request): RedirectResponse
+    public function store(StoreAdminUserRequest $request): RedirectResponse|JsonResponse
     {
         $this->accounts->saveUser($request->user(), null, $request->validated());
-        return redirect()->route('admin.users.index')->with('status', 'Akun administrator berhasil dibuat.');
+        return $this->success($request, 'Akun administrator berhasil dibuat.', 201);
     }
 
-    public function update(UpdateAdminUserRequest $request, User $user): RedirectResponse
+    public function update(UpdateAdminUserRequest $request, User $user): RedirectResponse|JsonResponse
     {
         $this->accounts->saveUser($request->user(), $user, $request->validated());
-        return redirect()->route('admin.users.index')->with('status', 'Akun administrator berhasil diperbarui.');
+        return $this->success($request, 'Akun administrator berhasil diperbarui.');
+    }
+
+    private function success(Request $request, string $message, int $status = 200): RedirectResponse|JsonResponse
+    {
+        $request->session()->flash('status', $message);
+
+        return $request->expectsJson()
+            ? response()->json(['message' => $message, 'redirect' => route('admin.users.index')], $status)
+            : redirect()->route('admin.users.index');
     }
 }
