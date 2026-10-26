@@ -5,7 +5,8 @@
     const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
     const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
     const icon = name => `<svg class="icon" aria-hidden="true"><use href="#a-${name}"/></svg>`;
-    const safeImage = url => /^(https?:\/\/|\/[^/])/i.test(String(url)) ? url : '';
+    let imageUrls = {};
+    const safeImage = url => /^(https?:\/\/|\/[^/])/i.test(String(url)) ? (imageUrls[url] || url) : '';
     const safeLink = url => /^(https?:\/\/|\/[^/])/i.test(String(url)) ? url : '#';
 
     $('[data-password-toggle]')?.addEventListener('click', event => {
@@ -29,6 +30,7 @@
 
     const copy = value => JSON.parse(JSON.stringify(value));
     let state = JSON.parse(stateNode.textContent);
+    imageUrls = state.image_urls || {};
     const account = { name: document.body.dataset.userName, username: document.body.dataset.userUsername };
     let mutationPending = false;
     let uploadsPending = 0;

@@ -60,6 +60,7 @@ final class CmsContent
             'permissions' => array_values(array_intersect(array_keys(CmsAccess::permissions()), $user->getAllPermissions()->pluck('name')->all())),
             'roles' => $user->getRoleNames()->values()->all(),
         ];
+        $state['image_urls'] = \App\Support\OptimizedImages::manifest();
         return $state;
     }
 

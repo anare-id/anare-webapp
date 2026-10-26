@@ -8,11 +8,15 @@ final class OptimizedImages
 {
     private static ?array $manifest = null;
 
+    public static function manifest(): array
+    {
+        return self::$manifest ??= is_file(public_path('images/optimized/manifest.json'))
+            ? json_decode(file_get_contents(public_path('images/optimized/manifest.json')), true, 512, JSON_THROW_ON_ERROR) : [];
+    }
+
     public static function path(?string $path): ?string
     {
-        self::$manifest ??= is_file(public_path('images/optimized/manifest.json'))
-            ? json_decode(file_get_contents(public_path('images/optimized/manifest.json')), true, 512, JSON_THROW_ON_ERROR) : [];
-        return self::$manifest[$path] ?? $path;
+        return self::manifest()[$path] ?? $path;
     }
 
     public static function record(array $record): array
