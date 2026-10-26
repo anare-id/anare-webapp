@@ -1,0 +1,8 @@
+# Installed only at /home/anaj8418/public_html/anare-dev/.htaccess.
+# Do not modify the WordPress parent handler at public_html/.htaccess.
+RewriteEngine On
+RewriteCond %{HTTP_HOST} !^(www\.)?dev\.anare\.co\.id$ [NC]
+RewriteRule ^ - [F,L]
+<IfModule mime_module>
+    AddHandler application/x-httpd-ea-php84___lsphp .php .php8 .phtml
+</IfModule>
