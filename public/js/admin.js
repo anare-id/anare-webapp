@@ -43,7 +43,7 @@
     const listFor = key => (key.startsWith('hero:') ? state.heroes?.[key.split(':')[1]] : state[key]) || [];
     const canView = key => can(`${moduleFor(key)}.view`);
     const canChange = (key, operation, item = null) => can(`${moduleFor(key)}.${operation}`) && (!item || item.status !== 'published' || can(`${moduleFor(key)}.publish`));
-    const canSettings = group => ['contact', 'social'].includes(group) ? can('settings.update') : can(`${group}.update`) && can(`${group}.publish`);
+    const canSettings = group => ['contact', 'social', 'theme'].includes(group) ? can('settings.update') : can(`${group}.update`) && can(`${group}.publish`);
     const canCategory = (operation, item = null) => can(`${collection}.${operation}`) && (!item || !listFor(collection).some(entry => entry.category === item.slug && entry.status === 'published') || can(`${collection}.publish`));
     const deny = () => toast('Anda tidak memiliki izin untuk tindakan ini.', true);
 
@@ -243,9 +243,55 @@
         return `<form class="settings-form" data-settings-form="${group}"><fieldset class="settings-fields" ${writable ? '' : 'disabled'}>${settingsFields(group)}</fieldset>${writable ? `<div class="settings-form-footer"><button type="submit" class="button button-dark">${icon('check')}Simpan perubahan</button></div>` : '<p class="editor-hint">Hanya baca. Anda tidak memiliki izin mengubah pengaturan ini.</p>'}</form>`;
     }
 
+    function themeForm() {
+        if (!state.settings.theme || !state.theme_schema) return '';
+        const writable = canSettings('theme');
+        return `<form class="settings-form" data-settings-form="theme"><fieldset class="settings-fields" ${writable ? '' : 'disabled'}><div class="theme-palette-groups">${Object.entries(state.theme_schema).map(([group, definition]) => `<details class="theme-palette-group" open><summary>${escape(definition.label)}</summary><div class="theme-color-grid">${Object.entries(definition.fields).map(([key, label]) => {
+            const name = `${group}_${key}`;
+            const value = state.settings.theme[name];
+            return `<div class="theme-color-field"><label for="color-${name}">${escape(label)}</label><div><input id="color-${name}" type="color" name="${name}" value="${escape(value)}" data-theme-picker="${name}"><input type="text" value="${escape(value)}" pattern="#[0-9a-fA-F]{6}" maxlength="7" required aria-label="Kode HEX ${escape(label)} — ${escape(definition.label)}" data-theme-hex="${name}" spellcheck="false"></div></div>`;
+        }).join('')}</div><div class="theme-color-preview" data-theme-preview="${group}"><strong>${escape(definition.label)}</strong><span>Pratinjau teks dan warna section</span><span class="theme-preview-button">Contoh tombol</span></div></details>`).join('')}</div></fieldset>${writable ? `<div class="settings-form-footer"><button type="button" class="button button-white" data-theme-reset>Reset ke default</button><button type="submit" class="button button-dark">${icon('check')}Simpan palet warna</button></div>` : '<p class="editor-hint">Hanya baca. Perubahan palet memerlukan izin pengaturan website.</p>'}<p class="editor-hint">Reset mengubah pilihan pada form saja; klik Simpan untuk menerapkan. Warna foto dan logo tidak diubah.</p></form>`;
+    }
+
+    function updateThemePreview(form) {
+        for (const [group, definition] of Object.entries(state.theme_schema || {})) {
+            const preview = $(`[data-theme-preview="${group}"]`, form);
+            if (!preview) continue;
+            const color = key => $(`[name="${group}_${key}"]`, form)?.value;
+            preview.style.backgroundColor = color('catalog_background') || color('background') || color('footer') || '#f4f8fa';
+            preview.style.color = color('ink') || (group === 'shared' ? '#ffffff' : '#213b4b');
+            $('.theme-preview-button', preview).style.backgroundColor = color('accent') || color('button') || color('neutral_button') || '#737373';
+        }
+    }
+
+    document.addEventListener('input', event => {
+        const form = event.target.closest('[data-settings-form="theme"]');
+        if (!form) return;
+        const picker = event.target.dataset.themePicker;
+        const hex = event.target.dataset.themeHex;
+        if (picker) $(`[data-theme-hex="${picker}"]`, form).value = event.target.value;
+        if (hex && /^#[0-9a-fA-F]{6}$/.test(event.target.value)) $(`[name="${hex}"]`, form).value = event.target.value;
+        updateThemePreview(form);
+    });
+
+    document.addEventListener('click', event => {
+        if (!event.target.closest('[data-theme-reset]') || !canSettings('theme')) return;
+        const form = event.target.closest('form');
+        for (const [group, definition] of Object.entries(state.theme_schema)) {
+            for (const [key, value] of Object.entries(definition.defaults)) {
+                $(`[name="${group}_${key}"]`, form).value = value;
+                $(`[data-theme-hex="${group}_${key}"]`, form).value = value;
+            }
+        }
+        updateThemePreview(form);
+    });
+
     function renderSettings() {
         $('#contact-settings').innerHTML = settingsForm('contact');
         $('#social-settings').innerHTML = settingsForm('social');
+        $('#theme-settings').innerHTML = themeForm();
+        const theme = $('[data-settings-form="theme"]');
+        if (theme) updateThemePreview(theme);
     }
 
     function render() {

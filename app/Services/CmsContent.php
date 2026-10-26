@@ -45,11 +45,15 @@ final class CmsContent
                 ? $this->records(HeroSlide::where('section', $section)) : [];
         }
         $settingGroups = array_values(array_filter(
-            ['home', 'skin', 'shape', 'doctors', 'contact', 'social'],
+            ['home', 'skin', 'shape', 'doctors', 'contact', 'social', 'theme'],
             fn (string $group): bool => CmsAccess::can($user, CmsAccess::group($group).'.view')
         ));
         if ($settingGroups !== []) {
             $state['settings'] = SiteSetting::whereIn('group', $settingGroups)->pluck('values', 'group')->all();
+        }
+        if (CmsAccess::can($user, 'settings.view')) {
+            $state['settings']['theme'] = ThemePalette::resolve($state['settings']['theme'] ?? []);
+            $state['theme_schema'] = ThemePalette::schema();
         }
         if (CmsAccess::can($user, 'activity.view')) {
             $state['activity'] = Activity::latest('id')->limit(50)->get()->map(fn (Activity $activity): array => [
