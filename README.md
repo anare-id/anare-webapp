@@ -2,6 +2,10 @@
 
 Laravel 12, Blade, CSS, dan JavaScript vanilla. Konten website dan panel admin menggunakan database MariaDB/MySQL. Node.js dan build frontend tidak diperlukan.
 
+## Hosting dev dan auto-deploy
+
+Laravel staging tersedia di **https://dev.anare.co.id**. Push ke `main` menjalankan GitHub Actions: tes → build production → FTPS terenkripsi → aktivasi release oleh cron hosting → health check. File upload, session, `.env`, dan database tidak ditimpa oleh update kode. Domain utama `anare.co.id` masih WordPress sampai cutover production disetujui terpisah. Detail backup, Cloudflare, secret, batas hosting, dan rollback yang sudah diuji ada di [deploy/README.md](deploy/README.md).
+
 ## Menjalankan di komputer ini
 
 Database, `.env`, dependency, migrasi, data awal, akun admin, dan link upload sudah disiapkan.
