@@ -33,7 +33,7 @@ final class SaveSettingsRequest extends FormRequest
                 'map_embed' => ['sometimes', 'nullable', 'url:https', 'max:2048', 'regex:~^https://(?:www\.)?(?:google\.com/maps/embed(?:\?|/)|maps\.google\.com/maps\?)~'],
                 'location_image' => ['sometimes', 'nullable', 'string', 'max:1024', new LocalImage()],
             ],
-            'social' => array_fill_keys(['clinic', 'shape', 'skin'], ['sometimes', 'nullable', 'url:https', 'max:2048', new WebLink()]),
+            'social' => array_fill_keys(['clinic', 'shape'], ['sometimes', 'nullable', 'url:https', 'max:2048', new WebLink()]) + ['skin' => ['prohibited']],
             'skin', 'shape' => array_fill_keys(['name', 'name_en', 'title', 'title_en', 'description', 'description_en'], $text) + [
                 'per_page' => ['sometimes', 'required', 'integer', 'between:1,100'],
                 'pagination_slots' => ['sometimes', 'required', 'integer', 'between:1,20'],

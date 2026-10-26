@@ -117,6 +117,7 @@ class WebsiteContent
                 continue;
             }
             $handle = trim((string) parse_url($url, PHP_URL_PATH), '/');
+            if (strcasecmp(ltrim($handle, '@'), 'anareskin.id') === 0) continue;
             $profiles[] = ['key' => $key, 'url' => $url, 'profile_url' => $url, 'label' => $this->text('contact', 'name'), 'handle' => $handle, 'username' => $handle];
         }
         return $profiles;
@@ -124,15 +125,35 @@ class WebsiteContent
 
     public function mapEmbedUrl(): string
     {
+        $embed = (string) $this->setting('contact', 'map_embed');
+        if ($embed !== '') return $this->localizedMapUrl($embed);
+
         $url = (string) $this->setting('contact', 'maps');
         if ($url === '') {
             return '';
         }
         if (str_contains($url, '/maps/embed') || str_contains($url, 'output=embed')) {
-            return $url;
+            return $this->localizedMapUrl($url);
         }
         parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
         $location = $query['query'] ?? $query['q'] ?? $this->text('contact', 'address');
+        // The legacy iframe does not resolve q=place_id:... and falls back to a world map.
+        if ($location === 'place_id:ChIJfTCB-Mv71y0RBeDF30u7ey8' || ($query['query_place_id'] ?? '') === 'ChIJfTCB-Mv71y0RBeDF30u7ey8' || str_contains($url, '0x2dd7fbcbf881307d:0x2f7bbb4bdfc5e005')) {
+            return $this->localizedMapUrl('https://maps.google.com/maps?cid=3421534276469252101&ll=-7.3234692%2C112.776346&z=17&output=embed');
+        }
+        if (str_starts_with($location, 'place_id:')) $location = $this->text('contact', 'address');
         return 'https://maps.google.com/maps?'.http_build_query(['q' => $location ?: $url, 'z' => 17, 'output' => 'embed', 'hl' => app()->getLocale()]);
+    }
+
+    private function localizedMapUrl(string $url): string
+    {
+        $parts = parse_url($url);
+        parse_str($parts['query'] ?? '', $query);
+        if (($query['q'] ?? '') === 'place_id:ChIJfTCB-Mv71y0RBeDF30u7ey8') {
+            unset($query['q']);
+            $query = array_replace($query, ['cid' => '3421534276469252101', 'll' => '-7.3234692,112.776346', 'z' => 17, 'output' => 'embed']);
+        }
+        $query['hl'] = app()->getLocale();
+        return ($parts['scheme'] ?? 'https').'://'.($parts['host'] ?? 'maps.google.com').($parts['path'] ?? '/').'?'.http_build_query($query);
     }
 }

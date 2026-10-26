@@ -28,7 +28,7 @@
         @foreach($otherDoctors as $otherDoctor)
             <a class="doctor-card" href="{{ route('doctors.detail', ['slug' => $otherDoctor['slug']]) }}">
                 @if($otherDoctor['profile_image'])<img src="{{ asset($otherDoctor['profile_image']) }}" alt="{{ $otherDoctor['name'] }}" loading="lazy">@endif
-                <div><h3>{{ $otherDoctor['name'] }}</h3><p>{{ $otherDoctor['specialty'] }}</p></div>
+                <div><h3>{{ $otherDoctor['name'] }}</h3></div>
             </a>
         @endforeach
     </div>

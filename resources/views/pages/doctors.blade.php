@@ -11,7 +11,7 @@
         @foreach($doctors as $doctor)
             <a class="doctor-card doctor-modal-trigger" href="{{ route('doctors.detail', ['slug' => $doctor['slug']]) }}" data-doctor-dialog="doctor-modal-{{ $doctor['id'] }}" aria-haspopup="dialog" aria-controls="doctor-modal-{{ $doctor['id'] }}">
                 @if($doctor['profile_image'])<span class="doctor-card-media"><img class="doctor-card-image" src="{{ asset($doctor['profile_image']) }}" alt="{{ $doctor['name'] }}" loading="lazy"></span>@endif
-                <div><h3>{{ $doctor['name'] }}</h3><p>{{ $doctor['specialty'] }}</p></div>
+                <div><h3>{{ $doctor['name'] }}</h3></div>
             </a>
         @endforeach
     </div>

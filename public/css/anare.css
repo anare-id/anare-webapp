@@ -221,9 +221,9 @@ body:has(.anare-home-hero) .nav-shell { width: min(1120px, 77.777778%); }
 /* Shared clinic information, using the supplied logo and contact details. */
 .site-footer.home-footer { width: min(1120px, 90%); min-height: 215px; margin: 70px auto 24px; padding: 20px 40px; border-radius: 9px; background: var(--footer); color: #fff; font-family: 'Cormorant Garamond', Georgia, serif; }
 .shape .site-footer.home-footer { background: var(--footer-shape); }
-.shape .logo img { object-fit: contain; }
+.shape .logo img { object-fit: contain; padding: 8px 12px; }
 .shape .logo-light { filter: brightness(0) invert(1); }
-.home-footer .footer-brand-shape img { height: 120px; object-fit: contain; margin-bottom: 8px; }
+.home-footer .footer-brand-shape img { height: 82px; object-fit: contain; padding: 6px 12px; }
 body:has(.anare-home-hero) .home-footer { width: min(1120px, 77.777778%); }
 .home-footer-grid { display: grid; grid-template-columns: minmax(0, 1.47fr) minmax(0, 1.12fr) minmax(0, .96fr) minmax(0, .9fr); gap: clamp(16px, 3.472222vw, 50px); }
 .footer-brand { display: block; width: 130px; max-width: 100%; }
@@ -254,6 +254,7 @@ body:has(.anare-home-hero) .home-footer { width: min(1120px, 77.777778%); }
     .nav-shell, body:has(.anare-home-hero) .nav-shell { width: 90%; gap: 16px; }
     .logo, .logo img { width: 88px; }
     .logo img { height: 68px; }
+    .shape .logo img { padding: 6px 10px; }
     .menu-toggle { display: block; }
     .nav-actions { gap: 8px; }
     .nav-links { margin-left: 0; }

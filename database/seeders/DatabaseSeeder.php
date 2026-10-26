@@ -156,7 +156,7 @@ final class DatabaseSeeder extends Seeder
                 'address' => $this->text('footer.address', 'id'), 'address_en' => $this->text('footer.address', 'en'),
                 'days' => $this->text('footer.days', 'id'), 'days_en' => $this->text('footer.days', 'en'),
                 'hours' => '09.00 – 19.00 WIB', 'hours_en' => '09.00 – 19.00 WIB',
-                'maps' => $reviewSource['source_url'], 'map_embed' => 'https://maps.google.com/maps?q=Anare%20Clinic%20Surabaya&t=&z=15&ie=UTF8&iwloc=&output=embed',
+                'maps' => $reviewSource['source_url'], 'map_embed' => 'https://maps.google.com/maps?cid=3421534276469252101&ll=-7.3234692%2C112.776346&z=17&output=embed',
                 'location_image' => '/images/anare-clinic-location.webp',
             ],
             'social' => ['clinic' => 'https://www.instagram.com/anareclinic.id/', 'shape' => 'https://www.instagram.com/anareshape.id/'],
