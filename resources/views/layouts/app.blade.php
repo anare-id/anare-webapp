@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap">
     <link rel="stylesheet" href="{{ asset('css/anare.css') }}">
     <link rel="icon" type="image/png" href="{{ asset('images/logo-biru.png') }}">
-    <script src="{{ asset('js/anare.js') }}" defer></script>
+    <script src="{{ asset('js/anare.js') }}?v={{ filemtime(public_path('js/anare.js')) }}" defer></script>
 </head>
 <body class="@yield('theme', 'skin') @yield('body-class')">
     @include('partials.icons')
