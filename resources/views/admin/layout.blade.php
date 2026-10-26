@@ -8,7 +8,7 @@
     <link rel="icon" href="{{ asset('images/logo-biru.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v={{ filemtime(public_path('css/admin.css')) }}">
     <script src="{{ asset('js/admin.js') }}?v={{ filemtime(public_path('js/admin.js')) }}" defer></script>
 </head>
 @php
@@ -73,7 +73,8 @@
     <dialog class="editor-dialog" id="editor-dialog" aria-labelledby="editor-title"><form id="content-editor"><header class="dialog-header"><div><span class="page-eyebrow" id="editor-eyebrow">CONTENT EDITOR</span><h2 id="editor-title">Edit konten</h2></div><button class="icon-button" type="button" data-dialog-close aria-label="Tutup editor"><svg class="icon"><use href="#a-close"/></svg></button></header><div class="editor-body" id="editor-body"></div><footer class="dialog-footer"><span><span class="status-dot"></span> Simpan untuk menerapkan perubahan</span><div><button type="button" class="button button-white" data-dialog-close>Batal</button><button type="submit" class="button button-dark"><svg class="icon"><use href="#a-check"/></svg>Simpan perubahan</button></div></footer></form></dialog>
     <dialog class="preview-dialog" id="preview-dialog" aria-labelledby="preview-title"><header class="dialog-header"><div><span class="page-eyebrow">CONTENT PREVIEW</span><h2 id="preview-title">Pratinjau konten</h2></div><button class="icon-button" type="button" data-dialog-close aria-label="Tutup pratinjau"><svg class="icon"><use href="#a-close"/></svg></button></header><div id="preview-body"></div></dialog>
     <dialog class="confirm-dialog" id="confirm-dialog" aria-labelledby="confirm-title"><form method="dialog"><div class="confirm-icon"><svg class="icon"><use href="#a-trash"/></svg></div><h2 id="confirm-title">Hapus konten?</h2><p id="confirm-description"></p><div class="confirm-actions"><button class="button button-white" value="cancel">Batal</button><button class="button button-danger" value="confirm">Hapus konten</button></div></form></dialog>
-    <div class="toast-region" id="toast-region" role="status" aria-live="polite"></div>
+    <div class="toast-region" id="toast-region" aria-label="Notifikasi admin"></div>
+    <script id="admin-feedback" type="application/json">{!! json_encode(['success' => session('status'), 'errors' => $errors->all()], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) !!}</script>
     <script id="admin-state" type="application/json">{!! json_encode($seed, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) !!}</script>
 @stack('scripts')
 </body>

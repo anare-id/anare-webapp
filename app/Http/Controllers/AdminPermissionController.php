@@ -9,6 +9,7 @@ use App\Services\AccountManager;
 use App\Services\CmsAccess;
 use App\Services\CmsContent;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -75,11 +76,17 @@ final class AdminPermissionController extends Controller
         ]);
     }
 
-    public function update(UpdateAdminPermissionRequest $request, Role $role): RedirectResponse
+    public function update(UpdateAdminPermissionRequest $request, Role $role): RedirectResponse|JsonResponse
     {
         $data = $request->validated();
         $this->accounts->saveRole($request->user(), $role, ['permissions' => $data['permissions'] ?? []]);
 
-        return redirect()->route('admin.permissions.index', ['role' => $role->getKey()])->with('status', 'Hak akses role berhasil diperbarui.');
+        $message = 'Hak akses role berhasil diperbarui.';
+        $destination = route('admin.permissions.index', ['role' => $role->getKey()]);
+        $request->session()->flash('status', $message);
+
+        return $request->expectsJson()
+            ? response()->json(['message' => $message, 'redirect' => $destination])
+            : redirect()->to($destination);
     }
 }

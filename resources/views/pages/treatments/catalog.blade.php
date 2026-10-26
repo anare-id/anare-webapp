@@ -1,14 +1,14 @@
 @extends('layouts.app')
 @section('title', $serviceName)
 @section('theme', $serviceKey.' treatment-page '.$serviceKey.'-page')
-@section('body-class', 'treatment-catalog-page')
+@section('body-class', 'has-hero treatment-catalog-page')
 @section('content')
-<section class="skin-hero treatment-catalog-hero" aria-labelledby="skin-title" data-hero-carousel data-carousel-interval="{{ $heroInterval }}">
+<section class="skin-hero viewport-hero treatment-catalog-hero" aria-labelledby="skin-title" data-hero-carousel data-carousel-interval="{{ $heroInterval }}">
     <div class="skin-hero-content hero-content">
         <h1 id="skin-title">{{ $heroTitle }}</h1>
-        <p>{{ $heroDescription }}</p>
+        @if($heroDescription !== '')<p>{{ $heroDescription }}</p>@endif
     </div>
-    @include('partials.hero-slideshow', ['id' => $serviceKey.'-hero', 'label' => __('site.hero.gallery', ['name' => $serviceName]), 'slides' => $heroSlides])
+    @include('partials.hero-slideshow', ['id' => $serviceKey.'-hero', 'label' => __('site.hero.gallery', ['name' => $serviceName]), 'slides' => $heroSlides, 'showSlideContent' => false])
 </section>
 
 <section id="treatments" class="skin-catalog container" aria-label="{{ __('site.catalog.list', ['name' => $serviceName]) }}">

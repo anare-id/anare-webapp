@@ -3,8 +3,8 @@
 @section('body-class', 'has-hero doctors-page')
 @section('content')
 <section class="hero catalog-hero viewport-hero doctors-hero" aria-labelledby="doctors-page-title" data-hero-carousel data-carousel-interval="{{ $heroInterval }}">
-    <div class="hero-overlay hero-content"><h1 id="doctors-page-title">{{ $website->text('doctors', 'title') }}</h1><p>{{ $website->text('doctors', 'description') }}</p></div>
-    @include('partials.hero-slideshow', ['id' => 'doctors-hero', 'label' => __('site.hero.gallery', ['name' => $website->text('contact', 'name')]), 'slides' => $heroSlides])
+    <div class="hero-overlay hero-content"><h1 id="doctors-page-title">{{ $website->text('doctors', 'title') }}</h1></div>
+    @include('partials.hero-slideshow', ['id' => 'doctors-hero', 'label' => __('site.hero.gallery', ['name' => $website->text('contact', 'name')]), 'slides' => $heroSlides, 'showSlideContent' => false])
 </section>
 <section id="doctor-list" class="container section" aria-label="{{ __('site.doctors.directory') }}">
     <div class="doctor-grid">

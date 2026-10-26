@@ -8,7 +8,7 @@ return [
     // Three local, replaceable demo photos for each existing hero.
     'slides' => [
         'home' => [
-            ['image' => 'hero.jpg', 'alt' => 'Anare Clinic beauty and skincare', 'position' => 'center 50%'],
+            ['image' => 'hero.jpg', 'alt' => 'Anare Clinic', 'position' => 'center 50%'],
             ['image' => 'IMG_0646.JPG', 'alt' => 'Aesthetic treatment at Anare Clinic', 'position' => 'center 65%'],
             ['image' => 'section.jpg', 'alt' => 'Skin confidence and personal care', 'position' => 'center 45%'],
         ],

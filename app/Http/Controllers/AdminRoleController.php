@@ -8,6 +8,7 @@ use App\Http\Requests\SaveAdminRoleRequest;
 use App\Services\AccountManager;
 use App\Services\CmsContent;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -47,21 +48,30 @@ final class AdminRoleController extends Controller
         ]);
     }
 
-    public function store(SaveAdminRoleRequest $request): RedirectResponse
+    public function store(SaveAdminRoleRequest $request): RedirectResponse|JsonResponse
     {
         $this->accounts->saveRole($request->user(), null, $request->validated());
-        return redirect()->route('admin.roles.index')->with('status', 'Role berhasil dibuat.');
+        return $this->success($request, 'Role berhasil dibuat.', 201);
     }
 
-    public function update(SaveAdminRoleRequest $request, Role $role): RedirectResponse
+    public function update(SaveAdminRoleRequest $request, Role $role): RedirectResponse|JsonResponse
     {
         $this->accounts->saveRole($request->user(), $role, $request->validated());
-        return redirect()->route('admin.roles.index')->with('status', 'Role berhasil diperbarui.');
+        return $this->success($request, 'Role berhasil diperbarui.');
     }
 
-    public function destroy(Request $request, Role $role): RedirectResponse
+    public function destroy(Request $request, Role $role): RedirectResponse|JsonResponse
     {
         $this->accounts->deleteRole($request->user(), $role);
-        return redirect()->route('admin.roles.index')->with('status', 'Role berhasil dihapus.');
+        return $this->success($request, 'Role berhasil dihapus.');
+    }
+
+    private function success(Request $request, string $message, int $status = 200): RedirectResponse|JsonResponse
+    {
+        $request->session()->flash('status', $message);
+
+        return $request->expectsJson()
+            ? response()->json(['message' => $message, 'redirect' => route('admin.roles.index')], $status)
+            : redirect()->route('admin.roles.index');
     }
 }

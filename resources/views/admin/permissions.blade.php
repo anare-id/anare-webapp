@@ -1,6 +1,6 @@
 @extends('admin.layout')
 @section('content')
-@if(session('status'))<p class="panel access-message" role="status">{{ session('status') }}</p>@endif
+@if(session('status'))<p class="panel access-message" role="status" data-server-success>{{ session('status') }}</p>@endif
 @if($errors->any() && !$isEditing)<div class="form-error" role="alert"><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
 <div class="management-page">
 @if($viewing)
@@ -15,7 +15,7 @@
         @include('admin.permission-accordion', ['rows' => $selectedRole->permissions, 'editable' => false])
     @else
     <p class="management-form-note">Buka modul untuk mengatur izin. Menutup accordion tidak menghapus pilihan; izin yang tidak dicentang akan dilepas saat disimpan.</p>
-    <form method="POST" action="{{ route('admin.permissions.update', $selectedRole) }}">
+    <form data-admin-action method="POST" action="{{ route('admin.permissions.update', $selectedRole) }}">
         @csrf @method('PUT')
         <input type="hidden" name="permissions_present" value="1">
         @include('admin.permission-accordion', ['rows' => $assignmentRows, 'editable' => true])

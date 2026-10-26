@@ -6,6 +6,7 @@ return [
     'nav' => ['home' => 'Beranda', 'services' => 'Layanan', 'doctors' => 'Dokter', 'articles' => 'Artikel', 'label' => 'Navigasi utama', 'skip' => 'Langsung ke konten', 'home_label' => 'Beranda Anare Clinic', 'languages' => 'Pilih bahasa', 'switch_id' => 'Ganti ke Bahasa Indonesia', 'switch_en' => 'Ganti ke bahasa Inggris'],
     'common' => ['book' => 'Buat Janji', 'detail' => 'Lihat Detail', 'read_more' => 'Baca Selengkapnya', 'at_clinic' => ':name di Anare Clinic', 'close_profile' => 'Tutup profil :name'],
     'home' => [
+        'location_photo_alt' => 'Foto klinik :name',
         'services' => 'Layanan Kami', 'skin_description' => 'Dermatologi, Laser, serta Perawatan Kulit dan Rambut', 'shape_description' => 'Pembentukan Kontur Wajah dan Tubuh, Pengencangan Kulit, dan Pelangsingan',
         'doctors' => 'DOKTER KAMI', 'doctors_intro' => 'Kenali tim dokter Anare Clinic yang siap mendampingi perjalanan perawatan Anda dengan perhatian dan pendekatan yang personal.', 'doctors_invitation' => 'Klik foto untuk mengenal dokter kami.', 'team' => 'Tim dokter Anare Clinic', 'profile' => 'Lihat profil :name',
         'article_title' => 'Judul Artikel', 'article_date' => '30 September 2026', 'instagram' => 'Instagram Kami', 'location' => 'Lokasi Kami', 'clients' => 'Ulasan Klien Kami', 'map_title' => 'Lokasi Anare Clinic di Google Maps', 'open_maps' => 'Buka di Google Maps', 'five_stars' => 'Lima bintang',

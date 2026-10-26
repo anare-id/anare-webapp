@@ -28,15 +28,21 @@
     const stateNode = $('#admin-state');
     if (!stateNode) return;
 
+    const toastRegion = $('#toast-region');
+    const toastTimers = new Map();
+    const supportsPopover = typeof toastRegion.showPopover === 'function';
+    if (supportsPopover) toastRegion.setAttribute('popover', 'manual');
     const copy = value => JSON.parse(JSON.stringify(value));
-    let state = JSON.parse(stateNode.textContent);
+    let state;
+    try { state = JSON.parse(stateNode.textContent); }
+    catch { toast('Data CMS tidak dapat dimuat. Silakan muat ulang halaman.', true); return; }
     imageUrls = state.image_urls || {};
     const account = { name: document.body.dataset.userName, username: document.body.dataset.userUsername };
     let mutationPending = false;
     let uploadsPending = 0;
     const section = document.body.dataset.adminSection;
     const collection = { dokter: 'doctors', artikel: 'articles' }[section] || section;
-    const labels = { skin: 'Anare Skin', shape: 'Anare Shape', doctors: 'Dokter', articles: 'Artikel', services: 'Layanan beranda', reviews: 'Testimoni', 'hero:home': 'Hero beranda', 'hero:skin': 'Banner Skin', 'hero:shape': 'Banner Shape', 'hero:doctors': 'Hero dokter' };
+    const labels = { skin: 'Anare Skin', shape: 'Anare Shape', doctors: 'Dokter', articles: 'Artikel', services: 'Layanan beranda', reviews: 'Testimoni', contact: 'Kontak & lokasi', 'hero:home': 'Hero beranda', 'hero:skin': 'Banner Skin', 'hero:shape': 'Banner Shape', 'hero:doctors': 'Hero dokter' };
     const singleLabels = { skin: 'treatment', shape: 'treatment', doctors: 'dokter', articles: 'artikel', services: 'layanan', reviews: 'testimoni' };
     const moduleFor = key => ({ services: 'home', reviews: 'home', beranda: 'home', dokter: 'doctors', artikel: 'articles' }[key] || (key.startsWith('hero:') ? key.split(':')[1] : key));
     const can = permission => (state.access?.permissions || []).includes(permission);
@@ -73,12 +79,54 @@
     let homeTab = 'hero';
     let editorContext = null;
 
+    function raiseNotifications() {
+        const target = $$('dialog[open]').at(-1) || document.body;
+        if (supportsPopover && toastRegion.matches(':popover-open')) toastRegion.hidePopover();
+        if (toastRegion.parentElement !== target) target.append(toastRegion);
+        if (supportsPopover && toastRegion.childElementCount) toastRegion.showPopover();
+    }
+
     function toast(message, error = false) {
+        message = String(message || (error ? 'Permintaan gagal diproses. Silakan coba lagi.' : 'Tindakan berhasil diproses.'));
+        for (const [item, timer] of toastTimers) {
+            if ($('.toast-message', item).textContent === message && item.classList.contains('error') === error) timer.dismiss();
+        }
         const item = document.createElement('div');
         item.className = `toast${error ? ' error' : ''}`;
-        item.innerHTML = `${icon(error ? 'info' : 'check')}<span>${escape(message)}</span>`;
-        $('#toast-region').append(item);
-        setTimeout(() => item.remove(), 5000);
+        item.setAttribute('role', error ? 'alert' : 'status');
+        item.setAttribute('aria-atomic', 'true');
+        item.innerHTML = `<span class="toast-icon">${icon(error ? 'info' : 'check')}</span><div class="toast-copy"><strong>${error ? 'Gagal' : 'Berhasil'}</strong><div class="toast-message"></div></div><button type="button" class="toast-close" aria-label="Tutup notifikasi">${icon('close')}</button>`;
+        $('.toast-message', item).textContent = message;
+        let remaining = error ? 12000 : 7000;
+        let started;
+        let timeout;
+        const pause = () => {
+            if (!timeout) return;
+            clearTimeout(timeout);
+            timeout = null;
+            remaining -= performance.now() - started;
+        };
+        const dismiss = () => {
+            clearTimeout(timeout);
+            toastTimers.delete(item);
+            item.remove();
+            if (supportsPopover && !toastRegion.childElementCount && toastRegion.matches(':popover-open')) toastRegion.hidePopover();
+        };
+        const resume = () => {
+            if (timeout || item.matches(':hover') || item.contains(document.activeElement)) return;
+            started = performance.now();
+            timeout = setTimeout(dismiss, Math.max(0, remaining));
+        };
+        $('.toast-close', item).addEventListener('click', dismiss);
+        item.addEventListener('pointerenter', pause);
+        item.addEventListener('pointerleave', resume);
+        item.addEventListener('focusin', pause);
+        item.addEventListener('focusout', () => queueMicrotask(resume));
+        toastTimers.set(item, { dismiss });
+        toastRegion.append(item);
+        while (toastRegion.childElementCount > 3) toastTimers.get(toastRegion.firstElementChild)?.dismiss();
+        raiseNotifications();
+        resume();
     }
 
     async function request(path, method = 'GET', data = null) {
@@ -89,14 +137,29 @@
             headers['Content-Type'] = 'application/json';
             options.body = JSON.stringify(data);
         }
-        const response = await fetch(path, options);
-        const result = await response.json().catch(() => ({}));
+        let response;
+        try { response = await fetch(path, options); }
+        catch { throw new Error('Tidak dapat terhubung ke server. Periksa koneksi Anda dan coba lagi.'); }
+        const result = await response.json().catch(() => null);
         if (!response.ok) {
-            const message = Object.values(result.errors || {}).flat().join('\n') || result.message || (response.status === 419 ? 'Sesi berakhir. Muat ulang halaman dan masuk kembali.' : response.status === 401 ? 'Silakan masuk kembali untuk melanjutkan.' : 'Perubahan belum tersimpan. Silakan coba lagi.');
+            const messages = {
+                401: 'Sesi login berakhir. Silakan masuk kembali untuk melanjutkan.',
+                403: 'Anda tidak memiliki izin untuk tindakan ini. Muat ulang halaman jika akses akun baru saja berubah.',
+                404: 'Data yang diminta tidak ditemukan. Muat ulang halaman untuk memperbarui daftar.',
+                409: 'Data telah berubah. Muat ulang halaman dan periksa kembali perubahan Anda.',
+                413: 'Berkas terlalu besar. Pilih gambar dengan ukuran maksimal 2 MB.',
+                419: 'Sesi berakhir. Muat ulang halaman dan masuk kembali sebelum menyimpan.',
+                429: 'Terlalu banyak permintaan. Tunggu sebentar lalu coba lagi.',
+            };
+            const message = response.status >= 500 ? 'Terjadi kesalahan pada server. Silakan coba lagi beberapa saat atau muat ulang halaman.'
+                : response.status === 422 ? [...new Set(Object.values(result?.errors || {}).flat())].join('\n') || result?.message || 'Isian belum valid. Periksa kembali formulir Anda.'
+                : messages[response.status] || result?.message || 'Permintaan gagal diproses. Silakan coba lagi.';
             const error = new Error(message);
-            error.fields = result.errors || {};
+            error.fields = result?.errors || {};
+            error.status = response.status;
             throw error;
         }
+        if (!result || typeof result !== 'object') throw new Error('Respons server tidak valid. Muat ulang halaman untuk memastikan hasil perubahan.');
         return result;
     }
 
@@ -112,7 +175,8 @@
         element.textContent = error.message;
         $$('[aria-invalid]', form).forEach(input => input.removeAttribute('aria-invalid'));
         for (const name of Object.keys(error.fields || {})) {
-            const input = [...form.elements].find(input => input.name === name);
+            const root = name.split('.')[0];
+            const input = [...form.elements].find(input => [name, root, root+'[]'].includes(input.name));
             if (input) {
                 input.setAttribute('aria-invalid', 'true');
                 const panel = input.closest('[data-language-panel]');
@@ -122,6 +186,23 @@
         element.scrollIntoView({ block: 'nearest' });
     }
 
+    const invalidForms = new Set();
+    document.addEventListener('invalid', event => {
+        const form = event.target.form;
+        if (!form?.matches('#content-editor, [data-settings-form], [data-admin-action]')) return;
+        event.target.setAttribute('aria-invalid', 'true');
+        if (invalidForms.has(form)) return;
+        invalidForms.add(form);
+        queueMicrotask(() => {
+            invalidForms.delete(form);
+            const names = $$('input:invalid, select:invalid, textarea:invalid', form).map(input => input.labels?.[0]?.querySelector('span')?.textContent || input.name);
+            toast('Formulir belum valid. Periksa kolom: '+[...new Set(names)].join(', ')+'.', true);
+        });
+    }, true);
+    document.addEventListener('input', event => {
+        if (event.target.matches('[aria-invalid="true"]') && event.target.validity?.valid) event.target.removeAttribute('aria-invalid');
+    });
+
     async function mutate(path, method, data, message, form = null) {
         if (mutationPending || uploadsPending) return false;
         mutationPending = true;
@@ -130,13 +211,15 @@
         if (form) $('.form-error', form)?.setAttribute('hidden', '');
         try {
             const result = await request(path, method, data);
+            if (!result.state || typeof result.state !== 'object') throw new Error('Server tidak mengirim data terbaru. Muat ulang halaman untuk memastikan hasil perubahan.');
             state = result.state;
+            imageUrls = state.image_urls || {};
             render();
-            if (message) toast(message);
+            toast(result.message || message);
             return true;
         } catch (error) {
             if (form) formError(form, error);
-            else toast(error.message, true);
+            toast(error.message, true);
             return false;
         } finally {
             mutationPending = false;
@@ -195,7 +278,7 @@
         if ($('#category-chips')) $('#category-chips').innerHTML = (state.category_records[collection] || []).map(item => `<div class="category-chip"><button class="text-link" type="button" data-filter-category="${escape(item.slug)}">${escape(item.title)} <span>${items.filter(entry => entry.category === item.slug).length}</span></button><button class="icon-button" type="button" data-edit-category="${escape(item.id)}" aria-label="Edit kategori ${escape(item.title)}">${icon('edit')}</button><button class="icon-button" type="button" data-delete-category="${escape(item.id)}" aria-label="Hapus kategori ${escape(item.title)}">${icon('trash')}</button></div>`).join('');
         if ($('#category-count')) $('#category-count').textContent = `${(state.category_records[collection] || []).length} KATEGORI`;
         const banners = $('#collection-banners');
-        if (banners) banners.innerHTML = `<div class="section-intro"><div><h2>Hero & banner</h2><p>Kelola gambar dan pesan halaman.</p></div><button type="button" class="button button-dark" data-create="hero:${collection}">${icon('plus')}Tambah banner</button></div><div class="hero-cards">${heroCards(`hero:${collection}`)}</div>`;
+        if (banners) banners.innerHTML = `<div class="section-intro"><div><h2>Hero & banner</h2><p>${['skin', 'shape'].includes(collection) ? 'Kelola foto banner. Judul dan deskripsi utama mengikuti Atur halaman.' : 'Kelola gambar dan pesan halaman.'}</p></div><button type="button" class="button button-dark" data-create="hero:${collection}">${icon('plus')}Tambah banner</button></div><div class="hero-cards">${heroCards(`hero:${collection}`)}</div>`;
         applyAccessControls();
     }
 
@@ -240,7 +323,8 @@
     function settingsForm(group) {
         if (!state.settings[group]) return '';
         const writable = canSettings(group);
-        return `<form class="settings-form" data-settings-form="${group}"><fieldset class="settings-fields" ${writable ? '' : 'disabled'}>${settingsFields(group)}</fieldset>${writable ? `<div class="settings-form-footer"><button type="submit" class="button button-dark">${icon('check')}Simpan perubahan</button></div>` : '<p class="editor-hint">Hanya baca. Anda tidak memiliki izin mengubah pengaturan ini.</p>'}</form>`;
+        const locationPhoto = group === 'contact' ? `<div class="settings-location-photo">${state.settings.contact.location_image ? `<img src="${escape(safeImage(state.settings.contact.location_image))}" alt="Foto klinik pada kartu lokasi">` : `<span class="stat-icon">${icon('image')}</span>`}<div><strong>Foto klinik pada lokasi</strong><p>Ditampilkan di atas Google Maps pada Beranda.</p>${writable ? `<button type="button" class="button button-white" data-settings-edit="contact">${icon('image')}Ubah foto klinik</button>` : ''}</div></div>` : '';
+        return `<form class="settings-form" data-settings-form="${group}"><fieldset class="settings-fields" ${writable ? '' : 'disabled'}>${settingsFields(group)}</fieldset>${locationPhoto}${writable ? `<div class="settings-form-footer"><button type="submit" class="button button-dark">${icon('check')}Simpan perubahan</button></div>` : '<p class="editor-hint">Hanya baca. Anda tidak memiliki izin mengubah pengaturan ini.</p>'}</form>`;
     }
 
     function renderSettings() {
@@ -265,6 +349,7 @@
     function openDialog(dialog) {
         dialog.showModal();
         document.body.classList.add('dialog-open');
+        raiseNotifications();
     }
     $$('dialog').forEach(dialog => {
         dialog.addEventListener('cancel', event => {
@@ -272,6 +357,7 @@
         });
         dialog.addEventListener('close', () => {
             if (!$('dialog[open]')) document.body.classList.remove('dialog-open');
+            raiseNotifications();
             requestAnimationFrame(() => {
                 if (document.activeElement === document.body && !$('dialog[open]')) {
                     const editButton = editorContext && $$('[data-edit]').find(button => button.dataset.edit === editorContext.key && button.dataset.id === editorContext.id);
@@ -320,6 +406,7 @@
         $('#editor-eyebrow').textContent = labels[key] || 'CONTENT EDITOR';
         const isHero = key.startsWith('hero:');
         let html = `<div class="editor-language-tabs" role="tablist" aria-label="Bahasa konten"><button class="active" type="button" role="tab" aria-selected="true" data-editor-language="id"><span class="language-flag">ID</span>Bahasa Indonesia</button><button type="button" role="tab" aria-selected="false" tabindex="-1" data-editor-language="en"><span class="language-flag">EN</span>English</button></div>`;
+        if (['hero:skin', 'hero:shape'].includes(key)) html += '<p class="editor-hint">Banner katalog menampilkan foto dari slide ini. Judul slide digunakan sebagai alt foto; judul dan deskripsi utama banner diatur melalui Atur halaman agar tidak bertumpuk dengan teks slide.</p>';
         html += `<div data-language-panel="id"><div class="field-grid">${field('title', key === 'doctors' ? 'Nama dokter *' : key === 'reviews' ? 'Nama klien *' : 'Judul / nama konten *', item.title, 'text', true, 'required')}${field('description', key === 'articles' ? 'Ringkasan artikel' : key === 'doctors' ? 'Biografi singkat' : key === 'reviews' ? 'Isi ulasan' : 'Deskripsi', item.description, 'textarea')}${key === 'articles' ? field('body', 'Isi artikel', item.body || item.description, 'textarea', true, 'rows="9"') : ''}${key === 'doctors' ? field('education', 'Pendidikan & pengalaman', item.education, 'textarea') + field('expertise', 'Keahlian (satu poin per baris)', item.expertise, 'textarea') : ''}</div></div>`;
         html += `<div data-language-panel="en" hidden><div class="field-grid">${field('title_en', key === 'doctors' ? 'Doctor’s name' : key === 'reviews' ? 'Client’s name' : 'Title / content name', item.title_en, 'text', true)}${field('description_en', key === 'articles' ? 'Article summary' : 'Description', item.description_en, 'textarea')}${key === 'articles' ? field('body_en', 'Article content', item.body_en, 'textarea') : ''}${key === 'doctors' ? field('education_en', 'Education & experience', item.education_en, 'textarea') + field('expertise_en', 'Expertise (one item per line)', item.expertise_en, 'textarea') : ''}</div></div>`;
         html += `<div class="editor-section-title">Detail konten</div><div class="field-grid">${selectField('status', 'Status publikasi', item.status, can(`${moduleFor(key)}.publish`) ? { published: 'Dipublikasikan', draft: 'Draft' } : { draft: 'Draft' })}`;
@@ -362,6 +449,7 @@
         element.hidden = false;
         element.textContent = message;
         element.scrollIntoView({ block: 'nearest' });
+        toast(message, true);
     }
 
     editorForm.addEventListener('invalid', event => {
@@ -400,7 +488,7 @@
         editorContext = { key: `settings:${group}` };
         $('#editor-title').textContent = group === 'home' ? 'Pengaturan beranda' : `Pengaturan ${labels[group] || group}`;
         $('#editor-eyebrow').textContent = 'WEBSITE SETTINGS';
-        $('#editor-body').innerHTML = `${settingsFields(group)}<p class="editor-hint">Perubahan diterapkan pada website setelah disimpan.</p><div class="form-error editor-error" role="alert" hidden></div>`;
+        $('#editor-body').innerHTML = `${settingsFields(group)}${group === 'contact' ? imageField(state.settings.contact, 'location_image', 'Foto klinik pada lokasi') : ''}<p class="editor-hint">Perubahan diterapkan pada website setelah disimpan.</p><div class="form-error editor-error" role="alert" hidden></div>`;
         openDialog(editor);
     }
 
@@ -475,9 +563,12 @@
             const data = new FormData();
             data.append('image', file);
             const result = await request('/admin/uploads', 'POST', data);
+            if (typeof result.url !== 'string' || !safeImage(result.url)) throw new Error('Server tidak mengirim lokasi gambar. Coba unggah kembali gambar Anda.');
             if (editor.open && editorContext === context) setImage(input.dataset.imageUpload, result.url);
+            toast(result.message || 'Gambar berhasil diunggah.');
         } catch (error) {
             if (editorContext === context) formError(editorForm, error);
+            toast(error.message, true);
         } finally {
             uploadsPending--;
             input.disabled = false;
@@ -552,7 +643,37 @@
         }
     });
 
-    document.addEventListener('submit', event => {
+    document.addEventListener('submit', async event => {
+        if (event.defaultPrevented) return;
+        const actionForm = event.target.closest('[data-admin-action]');
+        if (actionForm) {
+            event.preventDefault();
+            if (mutationPending || uploadsPending || !actionForm.reportValidity()) return;
+            const data = new FormData(actionForm);
+            const controls = $$('button, input, textarea, select', actionForm).filter(control => !control.disabled);
+            controls.forEach(control => control.disabled = true);
+            $('.form-error', actionForm)?.setAttribute('hidden', '');
+            $$('[aria-invalid]', actionForm).forEach(input => input.removeAttribute('aria-invalid'));
+            mutationPending = true;
+            let navigating = false;
+            try {
+                const result = await request(actionForm.action, actionForm.method.toUpperCase(), data);
+                const destination = typeof result.redirect === 'string' ? new URL(result.redirect, location.href) : null;
+                if (!destination || destination.origin !== location.origin) throw new Error('Server tidak mengirim halaman tujuan. Muat ulang halaman untuk memastikan hasil perubahan.');
+                navigating = true;
+                location.assign(destination.href);
+            } catch (error) {
+                formError(actionForm, error);
+                toast(error.message, true);
+            } finally {
+                if (!navigating) {
+                    mutationPending = false;
+                    delete actionForm.dataset.confirmed;
+                    controls.forEach(control => control.disabled = false);
+                }
+            }
+            return;
+        }
         const form = event.target.closest('[data-settings-form]');
         if (!form) return;
         event.preventDefault();
@@ -650,4 +771,10 @@
 
     $$('[data-home-tab]').forEach((tab, index) => tab.tabIndex = index ? -1 : 0);
     render();
+    const feedback = JSON.parse($('#admin-feedback')?.textContent || '{}');
+    if (feedback.success) {
+        toast(feedback.success);
+        $$('[data-server-success]').forEach(element => element.hidden = true);
+    }
+    if (Array.isArray(feedback.errors) && feedback.errors.length) toast([...new Set(feedback.errors)].join('\n'), true);
 })();

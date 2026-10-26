@@ -6,26 +6,13 @@
             <aside class="doctor-modal-identity" aria-label="{{ __('site.doctors.photo_schedule') }}">
                 @if(!empty($doctor['schedule_image']))
                     <img class="doctor-schedule-image" src="{{ asset($doctor['schedule_image']) }}" alt="{{ __('site.doctors.schedule_alt', ['name' => $doctor['name'], 'schedule' => $doctor['schedule_summary']]) }}" @if($doctor['schedule_width']) width="{{ $doctor['schedule_width'] }}" @endif @if($doctor['schedule_height']) height="{{ $doctor['schedule_height'] }}" @endif loading="lazy" decoding="async">
-                    @if(app()->getLocale() === 'en')
-                        <p class="doctor-schedule-translation" lang="en">{{ $doctor['schedule_summary'] }}</p>
-                    @endif
                 @else
                     <div class="doctor-modal-dummy">
                         @if($doctor['profile_image'])<img src="{{ asset($doctor['profile_image']) }}" alt="{{ $doctor['name'] }}" width="1148" height="1371" loading="lazy">@endif
-                        <h3>{{ $doctor['name'] }}</h3>
-                        <div class="doctor-dummy-schedule">
-                            <h4>{{ __('site.doctors.schedule') }}</h4>
-                            <p>{{ $doctor['schedule_summary'] }}</p>
-                        </div>
                     </div>
                 @endif
             </aside>
             <div class="doctor-modal-information">
-                <section>
-                    <h3>{{ $doctor['specialty'] }}</h3>
-                    <p class="article-content">{{ $doctor['description'] }}</p>
-                    @if($doctor['schedule_summary'])<p class="article-content">{{ $doctor['schedule_summary'] }}</p>@endif
-                </section>
                 <section class="doctor-modal-education" aria-labelledby="doctor-education-{{ $doctorIndex }}">
                     <h3 id="doctor-education-{{ $doctorIndex }}">{{ __('site.doctors.education') }}</h3>
                     <p>{{ $doctor['education'] }}</p>

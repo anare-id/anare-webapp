@@ -10,7 +10,7 @@
                     <img src="{{ asset($slide['image'] ?: $slide['mobile_image']) }}" alt="{{ $slide['alt'] }}" loading="{{ $loop->first ? 'eager' : 'lazy' }}" fetchpriority="{{ $loop->first ? 'high' : 'low' }}" decoding="async">
                 </picture>
                 @endif
-                @if(!empty($slide['title']) || !empty($slide['description']) || !empty($slide['button']))
+                @if(($showSlideContent ?? true) && (!empty($slide['title']) || !empty($slide['description']) || !empty($slide['button'])))
                     <div class="hero-slide-content">
                         @if(!empty($slide['title']))<h2>{{ $slide['title'] }}</h2>@endif
                         @if(!empty($slide['description']))<p class="home-hero-copy">{{ $slide['description'] }}</p>@endif
