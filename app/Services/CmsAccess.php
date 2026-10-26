@@ -36,7 +36,7 @@ final class CmsAccess
     public static function group(string $group): string
     {
         return match ($group) {
-            'contact', 'social' => 'settings',
+            'contact', 'social', 'theme' => 'settings',
             'home', 'skin', 'shape', 'doctors', 'articles' => $group,
             default => abort(404),
         };

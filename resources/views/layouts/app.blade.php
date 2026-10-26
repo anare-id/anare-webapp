@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="{{ asset('css/anare.css') }}?v={{ filemtime(public_path('css/anare.css')) }}">
     <link rel="icon" type="image/png" href="{{ asset('images/'.($shapePage ? 'logo-shape-transparent.png' : 'logo-biru.png')) }}">
     <script src="{{ asset('js/anare.js') }}?v={{ filemtime(public_path('js/anare.js')) }}" defer></script>
+    <style id="website-theme">{!! \App\Services\ThemePalette::css($website->settings()['theme'] ?? []) !!}</style>
 </head>
 <body class="@yield('theme', 'skin') @yield('body-class')">
     @include('partials.icons')

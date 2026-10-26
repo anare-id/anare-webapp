@@ -41,6 +41,7 @@ final class SaveSettingsRequest extends FormRequest
                 'default_category' => ['sometimes', 'required', 'string', Rule::exists('categories', 'slug')->where('group', $group)],
             ],
             'doctors' => array_fill_keys(['title', 'title_en', 'description', 'description_en'], $text),
+            'theme' => array_fill_keys(array_keys(\App\Services\ThemePalette::defaults()), ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/D']),
             default => abort(404),
         };
         return $rules;

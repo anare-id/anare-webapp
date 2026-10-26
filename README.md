@@ -177,6 +177,12 @@ php artisan admin:create --role=super-admin
 
 Password login existing tidak diganti oleh migrasi role. Permission bawaan dibuat saat instalasi; menjalankan seeder konten lagi tidak mengembalikan permission custom ke default. Setelah perubahan permission manual melalui SQL/Navicat, jalankan `php artisan permission:cache-reset`; perubahan dari panel menggunakan API Spatie yang mengelola cache-nya.
 
+### Palet warna website
+
+Pada **Pengaturan → Palet warna website**, tersedia color picker native dan input HEX `#RRGGBB` yang sinkron untuk 42 token warna: elemen bersama, Beranda, Skin, dan Shape. Preview menampilkan warna pilihan sebelum disimpan. Tombol **Reset ke default** hanya mengembalikan pilihan di form; klik **Simpan palet warna** untuk menerapkannya ke database. Perubahan disimpan pada `site_settings` grup `theme` dan langsung dipakai website lewat CSS variables per request, tanpa rebuild atau perubahan file CSS.
+
+Admin/Super Admin dengan `settings.update` dapat mengubah palet; Viewer dengan `settings.view` hanya membaca. Editor tanpa akses pengaturan tidak menerima data palet. Server menolak kode selain enam digit HEX untuk mencegah injeksi CSS. Default mengikuti warna existing di `config/theme.php`; foto, logo, dan warna panel admin tidak diubah. Skin dan Shape punya warna aksen, teks, latar, kartu, border, pagination, accordion, before/after, serta footer terpisah; warna teks putih pada foto tetap dipertahankan. Periksa keterbacaan/kontras setelah memilih warna terang.
+
 ## Setup di komputer baru
 
 Kebutuhan: PHP 8.2+, Composer 2, MariaDB/MySQL, ekstensi `pdo_mysql`, `fileinfo`, `mbstring`, `openssl`, `dom`, dan `zip`. Tes memakai `pdo_sqlite` untuk database sementara terisolasi; tes upload juga memakai `gd`.

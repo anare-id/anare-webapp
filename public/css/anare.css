@@ -119,7 +119,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px soli
 .eyebrow { margin-top: 25px; font-size: 12px; letter-spacing: 2px; }
 
 /* Home: all lettering is live HTML over the original, text-free photos. */
-body:has(.anare-home-hero) { --ink: #303a42; --home-unit: min(1vw, 14.4px); color: var(--ink); }
+body:has(.anare-home-hero) { --ink: #303a42; --button: #2e4050; --button-hover: #496a81; --home-unit: min(1vw, 14.4px); color: var(--ink); }
 body:has(.anare-home-hero) .nav-shell { width: min(1120px, 77.777778%); }
 .anare-home-hero { position: relative; display: grid; place-items: center; height: calc(var(--home-unit) * 33.611111); max-width: 1440px; margin-inline: auto; overflow: hidden; background: #aaa5a4; }
 .home-hero-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 50%; }
@@ -140,8 +140,8 @@ body:has(.anare-home-hero) .nav-shell { width: min(1120px, 77.777778%); }
 .home-service-content { position: relative; width: 65%; padding: calc(var(--home-unit) * 6.666667) calc(var(--home-unit) * 2.222222) calc(var(--home-unit) * 1.805556); }
 .home-service h3 { margin: 0 0 calc(var(--home-unit) * 1.25); font-size: calc(var(--home-unit) * 3.333333); line-height: 1.05; }
 .home-service p { margin: 0 0 calc(var(--home-unit) * 2.916667); font: 500 calc(var(--home-unit) * 1.527778)/1.3 'Cormorant Garamond', Georgia, serif; }
-.home-dark-button { display: inline-flex; align-items: center; justify-content: center; gap: 16px; min-height: 40px; max-width: 100%; padding: 8px 22px; border-radius: 10px; background: #2e4050; color: #fff; font-size: 18px; line-height: 1.3; }
-.home-dark-button:hover { background: #496a81; }
+.home-dark-button { display: inline-flex; align-items: center; justify-content: center; gap: 16px; min-height: 40px; max-width: 100%; padding: 8px 22px; border-radius: 10px; background: var(--button, #2e4050); color: #fff; font-size: 18px; line-height: 1.3; }
+.home-dark-button:hover { background: var(--button-hover, #496a81); }
 .home-dark-button > span, .home-dark-button > svg { flex-shrink: 0; }
 .home-service .home-dark-button { gap: calc(var(--home-unit) * 1.111111); min-height: 0; padding: calc(var(--home-unit) * .555556) calc(var(--home-unit) * 1.527778); font-size: calc(var(--home-unit) * 1.25); }
 .home-doctor-feature { --doctor-outline-filter: url(#doctor-silhouette-outline); position: relative; padding-top: 48px; overflow: hidden; background: radial-gradient(ellipse at 50% 30%, #a0a19b, #858883); color: #fff; }
@@ -220,7 +220,7 @@ body:has(.anare-home-hero) .nav-shell { width: min(1120px, 77.777778%); }
 
 /* Shared clinic information, using the supplied logo and contact details. */
 .site-footer.home-footer { width: min(1120px, 90%); min-height: 215px; margin: 70px auto 24px; padding: 20px 40px; border-radius: 9px; background: var(--footer); color: #fff; font-family: 'Cormorant Garamond', Georgia, serif; }
-.shape .site-footer.home-footer { background: var(--footer-shape); }
+.shape .site-footer.home-footer { background: var(--treatment-footer, var(--footer-shape)); }
 .shape .logo img { object-fit: contain; padding: 8px 12px; }
 .shape .logo-light { filter: brightness(0) invert(1); }
 .home-footer .footer-brand-shape img { height: 82px; object-fit: contain; padding: 6px 12px; }
@@ -538,10 +538,10 @@ body:has(.anare-home-hero) .home-footer { width: min(1120px, 77.777778%); }
 }
 
 /* Catalogs share the full-screen hero; treatment tiles remain square. */
-.skin.treatment-catalog-page { background: #f1f8fb; }
-.shape.treatment-catalog-page { background: #f8f4ef; }
+.skin.treatment-catalog-page { background: var(--catalog-background, #f1f8fb); }
+.shape.treatment-catalog-page { background: var(--catalog-background, #f8f4ef); }
 .treatment-catalog-page .site-header { box-shadow: none; }
-.shape.treatment-page .site-header { background: #d3c6b4; color: #211e1a; }
+.shape.treatment-page .site-header { background: var(--header-background, #d3c6b4); color: var(--header-text, #211e1a); }
 .treatment-catalog-page .skin-catalog { padding-block: 48px 24px; }
 .treatment-catalog-page .skin-categories { justify-content: flex-start; gap: 10px; margin-bottom: 40px; }
 .treatment-catalog-page .skin-category-link { flex: 0 0 auto; min-height: 44px; padding: 10px 16px; border: 0; border-radius: 8px; background: #fff; color: var(--treatment-label); font: 500 16px/1.3 'DM Sans', sans-serif; }
