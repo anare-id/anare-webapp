@@ -64,4 +64,9 @@ class StoreAdminUserRequest extends FormRequest
             'direct_permissions' => ['prohibited'],
         ];
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return route('admin.users.index', ['create' => 1]);
+    }
 }

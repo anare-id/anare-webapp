@@ -1,0 +1,71 @@
+name: Deploy Laravel development site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: anare-development-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: development
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@d52fc211a0436f8839a587b3b5b8efddab4744ea # v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, dom, fileinfo, pdo_mysql, pdo_sqlite, gd, zip
+          coverage: none
+          tools: composer:v2
+      - name: Install and test
+        run: |
+          composer install --prefer-dist --no-interaction --no-progress
+          php artisan test
+      - name: Build production archive
+        env:
+          RELEASE_SHA: ${{ github.sha }}
+        run: |
+          composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
+          composer check-platform-reqs --no-dev
+          mkdir -p /tmp/anare-release
+          cp -a app bootstrap config database lang public resources routes vendor artisan composer.json composer.lock /tmp/anare-release/
+          rm -f /tmp/anare-release/public/storage
+          rm -f /tmp/anare-release/bootstrap/cache/*.php
+          tar -czf "$RELEASE_SHA.tar.gz" -C /tmp/anare-release .
+          CHECKSUM="$(sha256sum "$RELEASE_SHA.tar.gz" | cut -d ' ' -f 1)"
+          printf '{"sha":"%s","checksum":"%s"}\n' "$RELEASE_SHA" "$CHECKSUM" > ready.json
+      - name: Upload release over verified FTPS
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          RELEASE_SHA: ${{ github.sha }}
+        run: |
+          test -n "$FTP_HOST" && test -n "$FTP_USER" && test -n "$FTP_PASSWORD"
+          curl --fail --show-error --silent --ssl-reqd --retry 3 --connect-timeout 30 --max-time 900 --user "$FTP_USER:$FTP_PASSWORD" --upload-file "$RELEASE_SHA.tar.gz" "ftp://$FTP_HOST/$RELEASE_SHA.tar.gz"
+          curl --fail --show-error --silent --ssl-reqd --retry 3 --user "$FTP_USER:$FTP_PASSWORD" --upload-file ready.json "ftp://$FTP_HOST/ready.json.uploading"
+          curl --fail --show-error --silent --ssl-reqd --user "$FTP_USER:$FTP_PASSWORD" --quote "RNFR ready.json.uploading" --quote "RNTO ready.json" "ftp://$FTP_HOST/" --output /dev/null
+      - name: Wait for hosting activation
+        env:
+          RELEASE_SHA: ${{ github.sha }}
+        run: |
+          for attempt in $(seq 1 60); do
+            DEPLOYED="$(curl --silent --fail --max-time 15 "https://dev.anare.co.id/deployment.json?run=$GITHUB_RUN_ID" || true)"
+            if printf '%s' "$DEPLOYED" | jq -e --arg sha "$RELEASE_SHA" '.sha == $sha' >/dev/null 2>&1; then
+              curl --fail --show-error --silent https://dev.anare.co.id/up
+              exit 0
+            fi
+            sleep 10
+          done
+          echo 'Hosting did not activate release; inspect private deploy.log.' >&2
+          exit 1

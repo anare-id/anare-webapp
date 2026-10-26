@@ -11,6 +11,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminContentController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminRoleController;
+use App\Http\Controllers\AdminPermissionController;
 use App\Http\Middleware\EnsureAdmin;
 use App\Services\CmsCollections;
 use Illuminate\Support\Facades\Route;
@@ -41,6 +42,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/roles', [AdminRoleController::class, 'store'])->name('roles.store');
         Route::put('/roles/{role}', [AdminRoleController::class, 'update'])->whereNumber('role')->name('roles.update');
         Route::delete('/roles/{role}', [AdminRoleController::class, 'destroy'])->whereNumber('role')->name('roles.destroy');
+        Route::get('/permissions', [AdminPermissionController::class, 'index'])->name('permissions.index');
+        Route::put('/permissions/{role}', [AdminPermissionController::class, 'update'])->whereNumber('role')->name('permissions.update');
         Route::get('/content', [AdminContentController::class, 'index'])->name('content');
         Route::post('/content/{collection}', [AdminContentController::class, 'store'])->where('collection', CmsCollections::NAMES);
         Route::put('/content/{collection}/{id}', [AdminContentController::class, 'update'])->where('collection', CmsCollections::NAMES)->whereNumber('id');

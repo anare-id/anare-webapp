@@ -248,6 +248,7 @@
 
     function render() {
         $$('[data-sidebar-count]').forEach(el => el.textContent = listFor(el.dataset.sidebarCount).length);
+        if (['users', 'roles', 'permissions'].includes(section)) return;
         if (section === 'dashboard') renderDashboard();
         else if (section === 'beranda') renderHome();
         else if (section === 'pengaturan') renderSettings();
@@ -281,6 +282,20 @@
             if (!mutationPending && !uploadsPending && event.target === dialog && (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom)) dialog.close();
         });
     });
+
+    const managementDialog = $('[data-management-dialog]');
+    if (managementDialog) {
+        managementDialog.addEventListener('close', () => {
+            history.replaceState(null, '', managementDialog.dataset.returnUrl);
+        });
+        openDialog(managementDialog);
+        $('.form-error', managementDialog)?.focus();
+        managementDialog.addEventListener('change', event => {
+            const group = event.target.closest('.permission-group');
+            if (!group || !event.target.matches('input[type="checkbox"]')) return;
+            $('[data-permission-selected]', group).textContent = $$('input[type="checkbox"]:checked', group).length;
+        });
+    }
 
     function selectField(name, label, value, options) {
         return `<label class="field"><span>${label}</span><select name="${name}">${Object.entries(options).map(([key, text]) => `<option value="${escape(key)}" ${key === value ? 'selected' : ''}>${escape(text)}</option>`).join('')}</select></label>`;
@@ -420,6 +435,16 @@
         openDialog(confirmDialog);
         $('[value="cancel"]', confirmDialog).focus();
     }
+
+    document.addEventListener('submit', event => {
+        const form = event.target.closest('[data-confirm-role]');
+        if (!form || form.dataset.confirmed === 'true') return;
+        event.preventDefault();
+        confirmAction('Hapus role?', `Role “${form.dataset.confirmRole}” akan dihapus dari database. Tindakan ini tidak dapat dibatalkan.`, 'Hapus role', () => {
+            form.dataset.confirmed = 'true';
+            form.requestSubmit();
+        });
+    });
 
     function setImage(name, value) {
         const area = $(`[data-image-field="${name}"]`, editor);
@@ -607,7 +632,7 @@
             }
         }
         if (event.key === 'Tab' && document.body.classList.contains('sidebar-open')) {
-            const elements = $$('a,button', sidebar);
+            const elements = $$('a,button,summary', sidebar).filter(element => element.getClientRects().length && !element.disabled);
             if (event.shiftKey && document.activeElement === elements[0]) { event.preventDefault(); elements.at(-1).focus(); }
             else if (!event.shiftKey && document.activeElement === elements.at(-1)) { event.preventDefault(); elements[0].focus(); }
         }

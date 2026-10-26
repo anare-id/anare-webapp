@@ -41,9 +41,17 @@
         </nav>
         @if($isSuperAdmin && ($canAccess('users.manage') || $canAccess('roles.manage')))
             <div class="sidebar-section-label sidebar-secondary-label">AKSES</div>
-            <nav class="sidebar-nav">
-                @if($canAccess('users.manage'))<a href="{{ route('admin.users.index') }}" class="sidebar-link {{ $section === 'users' ? 'active' : '' }}" @if($section === 'users') aria-current="page" @endif><svg class="icon"><use href="#a-doctor"/></svg><span>Akun pengguna</span></a>@endif
-                @if($canAccess('roles.manage'))<a href="{{ route('admin.roles.index') }}" class="sidebar-link {{ $section === 'roles' ? 'active' : '' }}" @if($section === 'roles') aria-current="page" @endif><svg class="icon"><use href="#a-settings"/></svg><span>Peran & izin</span></a>@endif
+            <nav class="sidebar-nav" aria-label="Management User">
+                <details class="management-nav" @if(in_array($section, ['users', 'roles', 'permissions'])) open @endif>
+                    <summary class="sidebar-link"><svg class="icon"><use href="#a-doctor"/></svg><span>Management User</span><svg class="icon management-chevron"><use href="#a-chevron"/></svg></summary>
+                    <div class="management-subnav">
+                        @if($canAccess('users.manage'))<a href="{{ route('admin.users.index') }}" class="sidebar-link {{ $section === 'users' ? 'active' : '' }}" @if($section === 'users') aria-current="page" @endif>User</a>@endif
+                        @if($canAccess('roles.manage'))
+                            <a href="{{ route('admin.roles.index') }}" class="sidebar-link {{ $section === 'roles' ? 'active' : '' }}" @if($section === 'roles') aria-current="page" @endif>Role</a>
+                            <a href="{{ route('admin.permissions.index') }}" class="sidebar-link {{ $section === 'permissions' ? 'active' : '' }}" @if($section === 'permissions') aria-current="page" @endif>Hak Akses</a>
+                        @endif
+                    </div>
+                </details>
             </nav>
         @endif
         <div class="sidebar-bottom"><div class="sidebar-demo"><span class="status-dot"></span><div><strong>Website CMS</strong><small>Konten tersimpan di database</small></div></div><form method="POST" action="{{ route('admin.logout') }}">@csrf<button class="sidebar-link logout-button" type="submit"><svg class="icon"><use href="#a-logout"/></svg>Keluar akun</button></form></div>
@@ -57,7 +65,7 @@
         <main class="admin-main" id="admin-main" tabindex="-1">
             <div class="page-heading"><div><div class="page-eyebrow">ANARE CONTENT MANAGEMENT</div><h1>{{ $page['title'] }}</h1><p>{{ $page['description'] }}</p></div><a class="button button-white website-shortcut" href="{{ route('home') }}" target="_blank" rel="noopener"><svg class="icon"><use href="#a-external"/></svg>Lihat website</a></div>
             <div class="demo-notice"><svg class="icon"><use href="#a-info"/></svg><span>Perubahan disimpan ke database. Konten berstatus Dipublikasikan akan tampil pada website.</span><span class="notice-storage">WEBSITE CMS</span></div>
-            @unless(in_array($section, ['users', 'roles']))<noscript><div class="form-error">Aktifkan JavaScript untuk menggunakan editor konten.</div></noscript>@endunless
+            @unless(in_array($section, ['users', 'roles', 'permissions']))<noscript><div class="form-error">Aktifkan JavaScript untuk menggunakan editor konten.</div></noscript>@endunless
             @yield('content')
             <footer class="workspace-footer"><span>© {{ date('Y') }} Anare Clinic</span><span>Dirancang untuk merawat setiap detail.</span><span>Content Management System</span></footer>
         </main>

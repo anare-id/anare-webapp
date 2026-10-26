@@ -53,12 +53,15 @@ final class AccountManager
             $this->editableRole($target);
             $permissions = $data['permissions'] ?? [];
             $allowed = array_diff(array_keys(CmsAccess::permissions()), ['users.manage', 'roles.manage']);
-            if ($data['name'] === 'super-admin' || array_diff($permissions, $allowed) !== []) {
+            $name = $data['name'] ?? $target->name;
+            if ($name === 'super-admin' || array_diff($permissions, $allowed) !== []) {
                 throw ValidationException::withMessages(['permissions' => 'Hak pengelolaan administrator tidak dapat diberikan ke role biasa.']);
             }
-            $target->name = $data['name'];
+            $target->name = $name;
             $target->save();
-            $target->syncPermissions($permissions);
+            if ($role === null || array_key_exists('permissions', $data)) {
+                $target->syncPermissions($permissions);
+            }
             $this->activity($actor, ($role === null ? 'Membuat role ' : 'Memperbarui role ').$target->name);
         });
     }

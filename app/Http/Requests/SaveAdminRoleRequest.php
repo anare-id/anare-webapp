@@ -57,6 +57,6 @@ final class SaveAdminRoleRequest extends FormRequest
     {
         $role = $this->route('role');
 
-        return route('admin.roles.index', $role instanceof Role ? ['edit' => $role->getKey()] : []);
+        return route('admin.roles.index', $role instanceof Role ? ['edit' => $role->getKey()] : ['create' => 1]);
     }
 }
