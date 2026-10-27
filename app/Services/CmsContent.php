@@ -54,6 +54,8 @@ final class CmsContent
         if (CmsAccess::can($user, 'settings.view')) {
             $state['settings']['theme'] = ThemePalette::resolve($state['settings']['theme'] ?? []);
             $state['theme_schema'] = ThemePalette::schema();
+            $state['theme_sections'] = config('theme.sections');
+            $state['theme_presets'] = ThemePalette::presets();
         }
         if (CmsAccess::can($user, 'activity.view')) {
             $state['activity'] = Activity::latest('id')->limit(50)->get()->map(fn (Activity $activity): array => [

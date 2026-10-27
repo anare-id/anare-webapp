@@ -14,7 +14,7 @@ body.shape { --accent: #a9977f; --pale: #eee9e3; --ink: #59483a; --background: #
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html { scroll-padding-top: calc(var(--header-height) + 16px); }
-body { margin: 0; background: #fff; color: var(--ink); font: 15px 'DM Sans', sans-serif; }
+body { margin: 0; background: var(--canvas, #fff); color: var(--ink); font: 15px 'DM Sans', sans-serif; }
 img { display: block; max-width: 100%; }
 button { font: inherit; cursor: pointer; }
 a { color: inherit; text-decoration: none; }
@@ -39,7 +39,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px soli
 .nav-shell { display: flex; align-items: center; justify-content: space-between; gap: 24px; width: min(1120px, 90%); height: var(--header-height); margin-inline: auto; }
 .logo { display: block; flex-shrink: 0; width: 112px; }
 .logo img { width: 112px; height: 88px; object-fit: cover; }
-.nav-links { display: flex; flex: 1; align-items: center; justify-content: space-between; max-width: 656px; gap: 12px; font: 600 24px/1.25 var(--nav-font); }
+.nav-links { display: flex; flex: 0 1 auto; align-items: center; justify-content: flex-start; max-width: none; gap: 24px; font: 600 24px/1.25 var(--nav-font); }
 .nav-links { margin-left: auto; }
 .nav-actions { display: flex; flex-shrink: 0; align-items: center; gap: 12px; }
 .language-switcher { display: inline-flex; flex-shrink: 0; align-items: center; gap: 0; padding: 3px; border: 1px solid #dedede; border-radius: 999px; background: #f4f4f4; color: #666; }
@@ -219,7 +219,7 @@ body:has(.anare-home-hero) .nav-shell { width: min(1120px, 77.777778%); }
 .review-avatar { display: inline-grid; flex-shrink: 0; place-items: center; width: 24px; height: 24px; border-radius: 4px; background: #e7dfd5; color: #465764; font: 600 10px 'DM Sans', sans-serif; }
 
 /* Shared clinic information, using the supplied logo and contact details. */
-.site-footer.home-footer { width: min(1120px, 90%); min-height: 215px; margin: 70px auto 24px; padding: 20px 40px; border-radius: 9px; background: var(--footer); color: #fff; font-family: 'Cormorant Garamond', Georgia, serif; }
+.site-footer.home-footer { width: min(1120px, 90%); min-height: 215px; margin: 70px auto 24px; padding: 20px 40px; border-radius: 9px; background: var(--footer); color: var(--footer-text, #fff); font-family: 'Cormorant Garamond', Georgia, serif; }
 .shape .site-footer.home-footer { background: var(--treatment-footer, var(--footer-shape)); }
 .shape .logo img { object-fit: contain; padding: 8px 12px; }
 .shape .logo-light { filter: brightness(0) invert(1); }
@@ -228,18 +228,20 @@ body:has(.anare-home-hero) .home-footer { width: min(1120px, 77.777778%); }
 .home-footer-grid { display: grid; grid-template-columns: minmax(0, 1.47fr) minmax(0, 1.12fr) minmax(0, .96fr) minmax(0, .9fr); gap: clamp(16px, 3.472222vw, 50px); }
 .footer-brand { display: block; width: 130px; max-width: 100%; }
 .footer-brand img { width: 130px; height: 82px; object-fit: cover; }
-.home-footer p { margin: 12px 0; color: #ededed; font-size: 16px; line-height: 1.45; }
+.home-footer p { margin: 12px 0; color: var(--footer-text, #ededed); font-size: 16px; line-height: 1.45; }
 .home-footer .footer-address { margin-top: 4px; font-size: 14px; line-height: 1.3; }
 .home-footer h4 { margin: 0 0 12px; font-size: 22px; line-height: 1.25; font-weight: 500; }
-.footer-copyright { display: block; color: #f0f0f0; font-size: 11px; line-height: 1.4; }
+.footer-copyright { display: block; color: var(--footer-text, #f0f0f0); font-size: 11px; line-height: 1.4; }
 .footer-contact-link { display: flex; align-items: center; gap: 10px; min-height: 32px; max-width: 100%; margin-top: 6px; font-size: 17px; line-height: 1.3; }
 .footer-contact-link > span:last-child { min-width: 0; overflow-wrap: anywhere; }
-.footer-contact-platform { display: block; margin-bottom: 2px; color: #f0f0f0; font-size: 13px; line-height: 1.2; }
+.footer-contact-platform { display: block; margin-bottom: 2px; color: var(--footer-text, #f0f0f0); font-size: 13px; line-height: 1.2; }
 .footer-contact-link:hover { color: #acd0e6; }
 .footer-icon { display: inline-grid; flex-shrink: 0; place-items: center; width: 28px; height: 28px; background: transparent; color: inherit; }
 .footer-icon svg { width: 22px; height: 22px; }
 
 @media (max-width: 1024px) and (min-width: 801px) {
+    .nav-shell { gap: 18px; }
+    .nav-links { gap: 18px; }
     .nav-links { font-size: 22px; }
     .home-review { min-height: 170px; padding: 14px; }
     .home-review p { font-size: 18px; }

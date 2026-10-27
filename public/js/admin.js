@@ -195,7 +195,7 @@
         invalidForms.add(form);
         queueMicrotask(() => {
             invalidForms.delete(form);
-            const names = $$('input:invalid, select:invalid, textarea:invalid', form).map(input => input.labels?.[0]?.querySelector('span')?.textContent || input.name);
+            const names = $$('input:invalid, select:invalid, textarea:invalid', form).map(input => input.labels?.[0]?.querySelector('span')?.textContent || input.getAttribute('aria-label') || input.name);
             toast('Formulir belum valid. Periksa kolom: '+[...new Set(names)].join(', ')+'.', true);
         });
     }, true);
@@ -330,11 +330,36 @@
     function themeForm() {
         if (!state.settings.theme || !state.theme_schema) return '';
         const writable = canSettings('theme');
-        return `<form class="settings-form" data-settings-form="theme"><fieldset class="settings-fields" ${writable ? '' : 'disabled'}><div class="theme-palette-groups">${Object.entries(state.theme_schema).map(([group, definition]) => `<details class="theme-palette-group" open><summary>${escape(definition.label)}</summary><div class="theme-color-grid">${Object.entries(definition.fields).map(([key, label]) => {
-            const name = `${group}_${key}`;
-            const value = state.settings.theme[name];
-            return `<div class="theme-color-field"><label for="color-${name}">${escape(label)}</label><div><input id="color-${name}" type="color" name="${name}" value="${escape(value)}" data-theme-picker="${name}"><input type="text" value="${escape(value)}" pattern="#[0-9a-fA-F]{6}" maxlength="7" required aria-label="Kode HEX ${escape(label)} — ${escape(definition.label)}" data-theme-hex="${name}" spellcheck="false"></div></div>`;
-        }).join('')}</div><div class="theme-color-preview" data-theme-preview="${group}"><strong>${escape(definition.label)}</strong><span>Pratinjau teks dan warna section</span><span class="theme-preview-button">Contoh tombol</span></div></details>`).join('')}</div></fieldset>${writable ? `<div class="settings-form-footer"><button type="button" class="button button-white" data-theme-reset>Reset ke default</button><button type="submit" class="button button-dark">${icon('check')}Simpan palet warna</button></div>` : '<p class="editor-hint">Hanya baca. Perubahan palet memerlukan izin pengaturan website.</p>'}<p class="editor-hint">Reset mengubah pilihan pada form saja; klik Simpan untuk menerapkan. Warna foto dan logo tidak diubah.</p></form>`;
+        const sections = state.theme_sections || { anare: { label: 'Anare', description: 'Beranda, Dokter & Artikel' }, skin: { label: 'Anare Skin' }, shape: { label: 'Anare Shape' } };
+        const presets = Object.entries(state.theme_presets || {});
+        return `<form class="settings-form" data-settings-form="theme"><p class="theme-form-intro">Ketik kode HEX, klik kotak warna untuk membuka color picker, atau gunakan palet cepat. Pratinjau berubah langsung; website diperbarui setelah disimpan.</p><fieldset class="settings-fields" ${writable ? '' : 'disabled'}><div class="theme-palette-groups">${Object.entries(sections).map(([section, info], index) => {
+            const groups = themeGroups(section);
+            const names = groups.flatMap(([group, definition]) => Object.keys(definition.defaults).map(key => `${group}_${key}`));
+            return `<details class="theme-palette-group" data-theme-section="${section}" ${index === 0 ? 'open' : ''}><summary><span><strong>${escape(info.label)}</strong><small>${escape(info.description || '')}</small></span>${icon('chevron')}</summary><div class="theme-preset-row"><span>Palet cepat</span><div class="theme-preset-options" role="group" aria-label="Palet ${escape(info.label)}">${presets.map(([id, preset]) => `<button type="button" class="theme-preset" data-theme-preset="${id}" data-theme-target="${section}" aria-pressed="${names.every(name => state.settings.theme[name] === preset.values[name])}" aria-label="Gunakan palet ${escape(preset.label)} untuk ${escape(info.label)}"><span class="theme-preset-swatches" aria-hidden="true">${preset.swatches.map(color => `<i style="background:${escape(color)}"></i>`).join('')}</span><span>${escape(preset.label)}</span></button>`).join('')}</div></div>${groups.map(([group, definition]) => `${groups.length > 1 ? `<h3 class="theme-subheading">${escape(definition.label)}</h3>` : ''}<div class="theme-color-grid">${Object.entries(definition.fields).map(([key, label]) => {
+                const name = `${group}_${key}`;
+                const value = state.settings.theme[name];
+                return `<div class="theme-color-field"><label for="color-${name}">${escape(label)}</label><div><input id="color-${name}" type="color" name="${name}" value="${escape(value)}" data-theme-picker="${name}"><input type="text" value="${escape(value)}" pattern="#[0-9a-fA-F]{6}" maxlength="7" required aria-label="Kode HEX ${escape(label)} — ${escape(info.label)}" data-theme-hex="${name}" spellcheck="false" autocomplete="off" placeholder="#RRGGBB"></div></div>`;
+            }).join('')}</div><div class="theme-color-preview" data-theme-preview="${group}"><strong>${escape(definition.label)}</strong><span>Pratinjau warna dan teks</span><span class="theme-preview-button">Contoh tombol</span></div>`).join('')}</details>`;
+        }).join('')}</div></fieldset>${writable ? `<div class="settings-form-footer theme-form-footer"><span class="theme-dirty" data-theme-dirty hidden>Perubahan warna belum disimpan</span><button type="button" class="button button-white" data-theme-reset>Reset semua tema</button><button type="submit" class="button button-dark">${icon('check')}Simpan palet warna</button></div>` : '<p class="editor-hint">Hanya baca. Perubahan palet memerlukan izin pengaturan website.</p>'}<p class="editor-hint">Pilihan palet dan reset berlaku pada form terlebih dahulu. Klik Simpan palet warna untuk menerapkan.</p></form>`;
+    }
+
+    function themeGroups(section) {
+        return Object.entries(state.theme_schema || {}).filter(([group, definition]) => (definition.section || (['shared', 'home'].includes(group) ? 'anare' : group)) === section);
+    }
+
+    function setThemeColor(form, name, value) {
+        const picker = $(`[data-theme-picker="${name}"]`, form);
+        const hex = $(`[data-theme-hex="${name}"]`, form);
+        if (!picker || !hex || !/^#[0-9a-fA-F]{6}$/.test(value)) return;
+        picker.value = value;
+        hex.value = value.toLowerCase();
+        picker.removeAttribute('aria-invalid');
+        hex.removeAttribute('aria-invalid');
+    }
+
+    function themeDirty(form) {
+        const marker = $('[data-theme-dirty]', form);
+        if (marker) marker.hidden = false;
     }
 
     function updateThemePreview(form) {
@@ -343,30 +368,47 @@
             if (!preview) continue;
             const color = key => $(`[name="${group}_${key}"]`, form)?.value;
             preview.style.backgroundColor = color('catalog_background') || color('background') || color('footer') || '#f4f8fa';
-            preview.style.color = color('ink') || (group === 'shared' ? '#ffffff' : '#213b4b');
-            $('.theme-preview-button', preview).style.backgroundColor = color('accent') || color('button') || color('neutral_button') || '#737373';
+            preview.style.color = group === 'shared' ? color('footer_text') || '#ffffff' : color('ink') || '#213b4b';
+            $('.theme-preview-button', preview).style.backgroundColor = color('button') || color('accent') || color('neutral_button') || '#737373';
         }
     }
 
     document.addEventListener('input', event => {
         const form = event.target.closest('[data-settings-form="theme"]');
         if (!form) return;
+        if (!canSettings('theme')) return;
         const picker = event.target.dataset.themePicker;
         const hex = event.target.dataset.themeHex;
-        if (picker) $(`[data-theme-hex="${picker}"]`, form).value = event.target.value;
-        if (hex && /^#[0-9a-fA-F]{6}$/.test(event.target.value)) $(`[name="${hex}"]`, form).value = event.target.value;
+        if (!picker && !hex) return;
+        if (picker) setThemeColor(form, picker, event.target.value);
+        if (hex) {
+            const value = event.target.value.trim();
+            const normalized = /^[0-9a-fA-F]{6}$/.test(value) ? '#'+value : value;
+            if (/^#[0-9a-fA-F]{6}$/.test(normalized)) setThemeColor(form, hex, normalized);
+        }
+        $$('[data-theme-preset]', event.target.closest('[data-theme-section]')).forEach(button => button.setAttribute('aria-pressed', 'false'));
+        themeDirty(form);
         updateThemePreview(form);
     });
 
     document.addEventListener('click', event => {
-        if (!event.target.closest('[data-theme-reset]') || !canSettings('theme')) return;
+        const presetButton = event.target.closest('[data-theme-preset]');
+        const resetButton = event.target.closest('[data-theme-reset]');
+        if (!presetButton && !resetButton) return;
+        if (!canSettings('theme')) return deny();
         const form = event.target.closest('form');
-        for (const [group, definition] of Object.entries(state.theme_schema)) {
+        const selectedPreset = presetButton ? state.theme_presets?.[presetButton.dataset.themePreset] : null;
+        if (presetButton && !selectedPreset) return;
+        const groups = presetButton ? themeGroups(presetButton.dataset.themeTarget) : Object.entries(state.theme_schema);
+        for (const [group, definition] of groups) {
             for (const [key, value] of Object.entries(definition.defaults)) {
-                $(`[name="${group}_${key}"]`, form).value = value;
-                $(`[data-theme-hex="${group}_${key}"]`, form).value = value;
+                const name = `${group}_${key}`;
+                setThemeColor(form, name, selectedPreset ? selectedPreset.values[name] : value);
             }
         }
+        const scope = presetButton ? presetButton.closest('[data-theme-section]') : form;
+        $$('[data-theme-preset]', scope).forEach(button => button.setAttribute('aria-pressed', String(button.dataset.themePreset === (presetButton?.dataset.themePreset || 'default'))));
+        themeDirty(form);
         updateThemePreview(form);
     });
 

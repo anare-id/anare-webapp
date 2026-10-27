@@ -179,9 +179,13 @@ Password login existing tidak diganti oleh migrasi role. Permission bawaan dibua
 
 ### Palet warna website
 
-Pada **Pengaturan → Palet warna website**, tersedia color picker native dan input HEX `#RRGGBB` yang sinkron untuk 42 token warna: elemen bersama, Beranda, Skin, dan Shape. Preview menampilkan warna pilihan sebelum disimpan. Tombol **Reset ke default** hanya mengembalikan pilihan di form; klik **Simpan palet warna** untuk menerapkannya ke database. Perubahan disimpan pada `site_settings` grup `theme` dan langsung dipakai website lewat CSS variables per request, tanpa rebuild atau perubahan file CSS.
+Pada **Pengaturan → Palet warna website**, tersedia tiga bagian: **Anare** (Beranda, Dokter, Artikel dan profil/detailnya), **Anare Skin**, serta **Anare Shape**. Total 49 token mencakup aksen, teks, latar, tombol, footer, dan komponen treatment. Setiap warna memiliki color picker native dan input HEX yang sinkron; enam digit tanpa `#` dinormalisasi pada form menjadi `#RRGGBB`.
 
-Admin/Super Admin dengan `settings.update` dapat mengubah palet; Viewer dengan `settings.view` hanya membaca. Editor tanpa akses pengaturan tidak menerima data palet. Server menolak kode selain enam digit HEX untuk mencegah injeksi CSS. Default mengikuti warna existing di `config/theme.php`; foto, logo, dan warna panel admin tidak diubah. Skin dan Shape punya warna aksen, teks, latar, kartu, border, pagination, accordion, before/after, serta footer terpisah; warna teks putih pada foto tetap dipertahankan. Periksa keterbacaan/kontras setelah memilih warna terang.
+Palet cepat **Default, Sage, Rose, dan Ocean** mengisi warna hanya untuk tema yang dipilih. Preview berubah langsung, dengan indikator perubahan yang belum disimpan. **Reset semua tema** mengembalikan pilihan di form; klik **Simpan palet warna** untuk menerapkan ke database. Perubahan disimpan pada `site_settings` grup `theme` dan dipakai melalui CSS variables per request, tanpa rebuild. Nama key lama `shared_*`, `home_*`, `skin_*`, dan `shape_*` dipertahankan agar warna yang sudah tersimpan tetap terbaca.
+
+Admin/Super Admin dengan `settings.update` dapat mengubah palet; Viewer dengan `settings.view` hanya membaca. Editor tanpa akses pengaturan tidak menerima data palet. Server menolak kode selain enam digit HEX untuk mencegah injeksi CSS. Default dan preset dikelola di `config/theme.php`. Anare menggunakan scope halaman non-treatment sehingga pilihan Skin/Shape tidak menimpa warna Beranda/Dokter/Artikel. Skin/Shape memiliki warna teks footer tersendiri; warna teks putih pada foto tetap dipertahankan.
+
+Navbar desktop memakai kelompok menu berukuran mengikuti konten, dengan jarak antar-item dan pemilih bahasa 24px. Pada tablet 801–1024px jaraknya 18px; navigasi mobile tetap memakai menu hamburger. Pengujian terakhir lulus **73 tes / 810 assertion**, termasuk persistensi warna, isolasi tema, format HEX, preset, dan izin pengguna. Browser memverifikasi sinkronisasi picker/HEX, palet per tema, preview, save/reload, reset yang belum disimpan, kontrol read-only, lima lebar panel pengaturan dan 25 kombinasi jarak navbar.
 
 ## Setup di komputer baru
 
