@@ -235,7 +235,7 @@ Galeri Instagram tetap memakai cache postingan hasil fetch; refresh opsional mem
 
 ## SEO, Alt Text, dan editor artikel
 
-- **Pengaturan → SEO & Google Search Console**: SEO Title, Meta Description, dan Index/Noindex untuk Beranda, Skin, Shape, Dokter, serta Artikel, masing-masing dalam Indonesia/English. Buka panel halaman untuk mengisi metadata.
+- **Pengaturan → SEO & Google Search Console**: pilih halaman melalui dropdown untuk mengisi SEO Title, Meta Description, dan Index/Noindex Beranda, Skin, Shape, Dokter, atau Artikel dalam Indonesia/English. Input tetap tersimpan di form saat berpindah halaman; tombol Simpan menyimpan seluruh pengaturan.
 - **Editor artikel/dokter/treatment**: metadata per detail terpisah dari judul dan ringkasan yang terlihat. Metadata kosong memakai konten tampilan; mengubah SEO tidak mengganti heading artikel.
 - Alt Text tersedia per gambar konten, termasuk banner desktop/mobile, katalog, foto dokter/jadwal, before/after, dan foto lokasi. Teks kosong memakai fallback kontekstual; gambar dekoratif tetap mempunyai alt kosong.
 - Isi artikel memakai Quill 2.0.3 lokal: heading, bold/italic, daftar, tautan internal/HTTPS, serta upload gambar. Judul artikel sudah H1; gunakan H2/H3 untuk subbagian. Klik dua kali gambar isi untuk mengubah Alt Text. Upload tunduk pada permission media dan batas upload CMS.

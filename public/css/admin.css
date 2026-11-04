@@ -393,4 +393,12 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
 .field .ql-editor img { max-width: 100%; height: auto; }
 .field .ql-tooltip { left: 0 !important; max-width: 100%; white-space: normal; z-index: 5; }
 .field .ql-editor:focus-visible { outline: 2px solid #6798b5; outline-offset: -2px; }
-[data-settings-form="seo"] > fieldset > .theme-palette-group { margin-top: 14px; }
+.seo-page-selector { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; padding-bottom: 22px; margin-bottom: 22px; border-bottom: 1px solid var(--border); }
+.seo-page-selector > .field { width: 320px; max-width: 100%; }
+.seo-page-selector > a { display: inline-flex; align-items: center; gap: 6px; padding-block: 10px; font-size: 11px; color: #606f77; white-space: nowrap; }
+.seo-page-selector > a .icon { width: 14px; height: 14px; }
+.seo-page-fields[hidden] { display: none; }
+.seo-page-fields > .field.full { grid-column: auto; }
+.seo-verification { border-top: 1px solid var(--border); margin-top: 22px; padding-top: 22px; }
+.seo-verification > .field { max-width: 640px; }
+@media (max-width: 600px) { .seo-page-selector { align-items: stretch; flex-direction: column; gap: 10px; }.seo-page-selector > .field { width: 100%; }.seo-page-fields > .field.full { grid-column: 1 / -1; } }
