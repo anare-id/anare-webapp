@@ -1,3 +1,8 @@
+const responsiveAltMedia = window.matchMedia('(max-width: 600px), (max-width: 1024px) and (orientation: portrait)');
+const updateResponsiveAlts = () => document.querySelectorAll('[data-desktop-alt]').forEach(image => { image.alt = responsiveAltMedia.matches ? image.dataset.mobileAlt : image.dataset.desktopAlt; });
+responsiveAltMedia.addEventListener('change', updateResponsiveAlts);
+updateResponsiveAlts();
+
 const siteTranslations = JSON.parse(document.querySelector('#site-translations')?.textContent || '{}');
 const text = (key, replacements = {}) => {
     let value = siteTranslations[key] || key;
@@ -136,6 +141,8 @@ document.querySelectorAll('[data-hero-carousel]').forEach(carousel => {
         const image = clone.querySelector('img');
         if (image) {
             image.alt = '';
+            image.removeAttribute('data-desktop-alt');
+            image.removeAttribute('data-mobile-alt');
             image.loading = 'lazy';
             image.fetchPriority = 'low';
         }

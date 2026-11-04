@@ -24,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
                 'whatsappUrl' => $website->whatsappUrl(),
                 'socialProfiles' => $website->socialProfiles(),
                 'heroInterval' => max(1, (int) $website->setting('home', 'slide_interval', 5)) * 1000,
+                'seo' => app(\App\Services\SeoContent::class)->page(request(), $view->getData()),
             ]);
         });
     }

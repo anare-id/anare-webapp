@@ -4,13 +4,13 @@
 @section('content')
 <article class="container section article-body">
     <a class="back" href="{{ route('articles') }}">‹ {{ __('site.articles.back') }}</a>
-    @if($article['image'])<img class="article-banner" src="{{ asset($article['image']) }}" alt="{{ $article['title'] }}">@endif
+    @if($article['image'])<img class="article-banner" src="{{ asset($article['image']) }}" alt="{{ $article['image_alt'] ?: $article['title'] }}">@endif
     <p class="eyebrow">{{ mb_strtoupper($article['category_title']) }}</p>
     <h1>{{ $article['title'] }}</h1>
     @if($article['date'])<time datetime="{{ $article['date'] }}">{{ \Carbon\Carbon::parse($article['date'])->locale(app()->getLocale())->translatedFormat('d F Y') }}</time>@endif
     @if($article['author'])<p>{{ $article['author'] }}</p>@endif
     <p class="article-content">{{ $article['description'] }}</p>
-    <div class="article-content">{{ $article['body'] }}</div>
+    <div class="article-content article-rich-content">{!! app(\App\Services\ArticleHtml::class)->render($article['body'], $article['body_format'] ?? 'text') !!}</div>
 </article>
 <section class="section muted center">
     <div class="container">

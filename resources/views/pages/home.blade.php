@@ -13,7 +13,7 @@
         <div class="home-services-grid">
             @foreach($services as $service)
                 <article class="home-service home-service-{{ $loop->first ? 'skin' : 'shape' }}" @if(!$service['image']) style="min-height: 0" @endif>
-                    @if($service['image'])<img src="{{ asset($service['image']) }}" alt="{{ $service['title'] }}" width="1672" height="941" loading="lazy">@endif
+                    @if($service['image'])<img src="{{ asset($service['image']) }}" alt="{{ $service['image_alt'] ?? '' ?: $service['title'] }}" width="1672" height="941" loading="lazy">@endif
                     <div class="home-service-content" @if(!$service['image']) style="width: 100%; padding: 24px" @endif>
                         <h3>{{ $service['title'] }}</h3>
                         <p>{{ $service['description'] }}</p>
@@ -34,7 +34,7 @@
     <div class="home-doctor-team" style="--featured-doctor-count: {{ max(1, min(6, count($featuredDoctors))) }}; --featured-doctor-mobile-count: {{ max(1, min(3, count($featuredDoctors))) }}; @if(!collect($featuredDoctors)->contains(fn ($doctor) => !empty($doctor['home_image']))) grid-auto-rows: auto; @endif" aria-label="{{ __('site.home.team') }}">
         @foreach($featuredDoctors as $doctor)
             <a class="home-doctor-link home-doctor-link-{{ $loop->iteration }}" @if(!$doctor['home_image']) style="height: auto; align-self: end; padding: 24px 8px" @endif href="{{ route('doctors.detail', ['slug' => $doctor['slug']]) }}" aria-label="{{ __('site.home.profile', ['name' => $doctor['name']]) }}">
-                @if($doctor['home_image'])<img class="home-doctor-photo" src="{{ asset($doctor['home_image']) }}" alt="{{ $doctor['name'] }}" @if($doctor['home_image_width']) width="{{ $doctor['home_image_width'] }}" @endif @if($doctor['home_image_height']) height="{{ $doctor['home_image_height'] }}" @endif loading="lazy" decoding="async">@endif
+                @if($doctor['home_image'])<img class="home-doctor-photo" src="{{ asset($doctor['home_image']) }}" alt="{{ $doctor['home_image_alt'] ?? '' ?: $doctor['name'] }}" @if($doctor['home_image_width']) width="{{ $doctor['home_image_width'] }}" @endif @if($doctor['home_image_height']) height="{{ $doctor['home_image_height'] }}" @endif loading="lazy" decoding="async">@endif
                 <span class="doctor-profile-caption" @if(!$doctor['home_image']) style="position: static; width: auto; transform: none; opacity: 1; visibility: visible" @endif aria-hidden="true"><strong class="doctor-name">{{ $doctor['name'] }}</strong></span>
             </a>
         @endforeach
@@ -44,7 +44,7 @@
 @foreach($featuredArticles as $article)
 <section class="home-block home-featured" aria-labelledby="article-title-{{ $article['id'] }}">
     <div class="home-inner home-featured-grid" @if(!$article['image']) style="grid-template-columns: minmax(0, 1fr)" @endif>
-        @if($article['image'])<img src="{{ asset($article['image']) }}" alt="{{ $article['title'] }}" width="4000" height="6000" loading="lazy">@endif
+        @if($article['image'])<img src="{{ asset($article['image']) }}" alt="{{ $article['image_alt'] ?? '' ?: $article['title'] }}" width="4000" height="6000" loading="lazy">@endif
         <div>
             @if($article['date'])<time class="home-date" datetime="{{ $article['date'] }}">{{ \Carbon\Carbon::parse($article['date'])->locale(app()->getLocale())->translatedFormat('d F Y') }}</time>@endif
             <h2 id="article-title-{{ $article['id'] }}">{{ $article['title'] }}</h2>
@@ -86,7 +86,7 @@
             <div class="home-location-card">
                 @if($website->setting('contact', 'location_image'))
                     <a class="home-location-photo" href="{{ $website->setting('contact', 'maps') ?: $website->mapEmbedUrl() }}" target="_blank" rel="noopener noreferrer">
-                        <img src="{{ asset($website->setting('contact', 'location_image')) }}" alt="{{ __('site.home.location_photo_alt', ['name' => $website->text('contact', 'name')]) }}" width="1000" height="667" loading="lazy" decoding="async">
+                        <img src="{{ asset($website->setting('contact', 'location_image')) }}" alt="{{ $website->text('contact', 'location_image_alt') ?: __('site.home.location_photo_alt', ['name' => $website->text('contact', 'name')]) }}" width="1000" height="667" loading="lazy" decoding="async">
                         <span>{{ $website->text('contact', 'name') }} <span aria-hidden="true">↗</span></span>
                     </a>
                 @endif

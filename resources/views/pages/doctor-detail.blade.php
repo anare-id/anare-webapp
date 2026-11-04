@@ -4,7 +4,7 @@
 <section class="container section">
     <a class="back" href="{{ route('doctors') }}">‹ {{ __('site.doctors.back') }}</a>
     <div class="detail-grid" @if(!$doctor['profile_image']) style="grid-template-columns: minmax(0, 1fr)" @endif>
-        @if($doctor['profile_image'])<img class="doctor-profile-photo" src="{{ asset($doctor['profile_image']) }}" alt="{{ $doctor['name'] }}">@endif
+        @if($doctor['profile_image'])<img class="doctor-profile-photo" src="{{ asset($doctor['profile_image']) }}" alt="{{ $doctor['image_alt'] ?? '' ?: $doctor['name'] }}">@endif
         <div>
             <h1>{{ $doctor['name'] }}</h1>
             <p>{{ $doctor['specialty'] }}</p>
@@ -15,7 +15,7 @@
     </div>
 </section>
 <section class="container section">
-    @if($doctor['schedule_image'])<img class="doctor-schedule-image" src="{{ asset($doctor['schedule_image']) }}" alt="{{ __('site.doctors.schedule_alt', ['name' => $doctor['name'], 'schedule' => $doctor['schedule_summary']]) }}" loading="lazy">@endif
+    @if($doctor['schedule_image'])<img class="doctor-schedule-image" src="{{ asset($doctor['schedule_image']) }}" alt="{{ $doctor['schedule_image_alt'] ?? '' ?: __('site.doctors.schedule_alt', ['name' => $doctor['name'], 'schedule' => $doctor['schedule_summary']]) }}" loading="lazy">@endif
     <h2>{{ __('site.doctors.education') }}</h2>
     <p class="article-content">{{ $doctor['education'] }}</p>
     <h2>{{ __('site.doctors.expertise') }}</h2>
@@ -27,7 +27,7 @@
     <div class="doctor-grid">
         @foreach($otherDoctors as $otherDoctor)
             <a class="doctor-card" href="{{ route('doctors.detail', ['slug' => $otherDoctor['slug']]) }}">
-                @if($otherDoctor['profile_image'])<img src="{{ asset($otherDoctor['profile_image']) }}" alt="{{ $otherDoctor['name'] }}" loading="lazy">@endif
+                @if($otherDoctor['profile_image'])<img src="{{ asset($otherDoctor['profile_image']) }}" alt="{{ $otherDoctor['image_alt'] ?? '' ?: $otherDoctor['name'] }}" loading="lazy">@endif
                 <div><h3>{{ $otherDoctor['name'] }}</h3></div>
             </a>
         @endforeach

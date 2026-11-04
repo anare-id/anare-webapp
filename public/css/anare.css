@@ -711,3 +711,11 @@ body.doctor-modal-open { overflow: hidden; }
     .doctors-hero .hero-slide-content { padding-bottom: 58px; }
     .doctors-hero .hero-slide-content p { font-size: 15px; }
 }
+.article-rich-content { white-space: normal; }
+.article-rich-content h1, .article-rich-content h2, .article-rich-content h3 { margin: 28px 0 14px; line-height: 1.25; }
+.article-rich-content h1 { font-size: 36px; }.article-rich-content h2 { font-size: 30px; }.article-rich-content h3 { font-size: 24px; }
+.article-rich-content p { margin: 0 0 16px; }
+.article-rich-content ul, .article-rich-content ol { padding-left: 28px; line-height: 1.8; }
+.article-rich-content a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.article-rich-content img { max-width: 100%; height: auto; margin-block: 20px; }
+.article-rich-content blockquote { border-left: 3px solid var(--accent); margin-inline: 0; padding-left: 20px; }

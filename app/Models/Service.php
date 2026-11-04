@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 final class Service extends Model
 {
     use \App\Models\Concerns\HasPublication;
+    use \App\Models\Concerns\HasImageAlts;
 
     protected $fillable = ['title', 'title_en', 'description', 'description_en', 'image', 'url', 'status', 'sort_order'];
 

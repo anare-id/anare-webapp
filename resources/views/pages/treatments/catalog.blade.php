@@ -22,7 +22,7 @@
         <div class="skin-treatment-grid">
             @foreach($treatments as $treatment)
                 <a class="skin-treatment-card" href="{{ route($serviceKey.'.detail', ['slug' => $treatment['slug'], 'category' => $activeCategory, 'page' => $treatments->currentPage()]) }}">
-                    @if($treatment['catalog_image'])<img src="{{ asset($treatment['catalog_image']) }}" alt="{{ __('site.common.at_clinic', ['name' => $treatment['name']]) }}" style="object-position: {{ $treatment['catalog_image_position'] ?: $treatment['image_position'] ?: 'center' }}" width="4000" height="6000" loading="lazy">@endif
+                    @if($treatment['catalog_image'])<img src="{{ asset($treatment['catalog_image']) }}" alt="{{ $treatment['catalog_image_alt'] ?? '' ?: __('site.common.at_clinic', ['name' => $treatment['name']]) }}" style="object-position: {{ $treatment['catalog_image_position'] ?: $treatment['image_position'] ?: 'center' }}" width="4000" height="6000" loading="lazy">@endif
                     <h2>{{ $treatment['name'] }}@if(!empty($treatment['subtitle']))<span>{{ $treatment['subtitle'] }}</span>@endif</h2>
                 </a>
             @endforeach

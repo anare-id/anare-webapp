@@ -5,7 +5,7 @@
 <section class="container skin-detail-intro">
     <a class="skin-back-link" href="{{ $backUrl }}"><span aria-hidden="true">‹</span> {{ __('site.treatment.back') }}</a>
     <div class="skin-detail-grid" @if(!$treatment['image']) style="grid-template-columns: minmax(0, 1fr)" @endif>
-        @if($treatment['image'])<img class="skin-detail-photo" src="{{ asset($treatment['image']) }}" alt="{{ __('site.common.at_clinic', ['name' => $treatment['name']]) }}" style="object-position: {{ $treatment['image_position'] ?: 'center' }}" width="4000" height="6000" fetchpriority="high">@endif
+        @if($treatment['image'])<img class="skin-detail-photo" src="{{ asset($treatment['image']) }}" alt="{{ $treatment['image_alt'] ?? '' ?: __('site.common.at_clinic', ['name' => $treatment['name']]) }}" style="object-position: {{ $treatment['image_position'] ?: 'center' }}" width="4000" height="6000" fetchpriority="high">@endif
         <div class="skin-detail-copy">
             <h1>{{ $treatment['name'] }}@if(!empty($treatment['subtitle']))<span>{{ $treatment['subtitle'] }}</span>@endif</h1>
                 <span class="skin-treatment-duration">
@@ -24,7 +24,7 @@
         <div class="skin-comparison-grid">
             @foreach(['before' => __('site.treatment.before'), 'after' => __('site.treatment.after')] as $key => $label)
                 <figure>
-                    <img src="{{ asset($comparison[$key]) }}" alt="{{ $label }} — {{ !empty($comparison['illustrative']) ? __('site.treatment.illustration_alt') : $treatment['name'] }}" style="object-position: {{ $comparison['image_position'] ?: 'center 40%' }}" width="4000" height="6000" loading="lazy">
+                    <img src="{{ asset($comparison[$key]) }}" alt="{{ $treatment['comparison_'.$key.'_alt'] ?? '' ?: $label }} — {{ !empty($comparison['illustrative']) ? __('site.treatment.illustration_alt') : $treatment['name'] }}" style="object-position: {{ $comparison['image_position'] ?: 'center 40%' }}" width="4000" height="6000" loading="lazy">
                     <figcaption>{{ $label }}</figcaption>
                 </figure>
             @endforeach

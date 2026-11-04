@@ -16,6 +16,8 @@ use App\Http\Middleware\EnsureAdmin;
 use App\Services\CmsCollections;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/sitemap.xml', [\App\Http\Controllers\SeoController::class, 'sitemap'])->name('sitemap');
+Route::get('/robots.txt', [\App\Http\Controllers\SeoController::class, 'robots'])->name('robots');
 Route::post('/language/{locale}', LocaleController::class)->name('locale.update');
 Route::get('/', HomeController::class)->name('home');
 Route::get('/instagram/feed', InstagramFeedController::class)->name('instagram.feed');
@@ -49,7 +51,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('/content/{collection}/{id}', [AdminContentController::class, 'update'])->where('collection', CmsCollections::NAMES)->whereNumber('id');
         Route::delete('/content/{collection}/{id}', [AdminContentController::class, 'destroy'])->where('collection', CmsCollections::NAMES)->whereNumber('id');
         Route::post('/content/{collection}/{id}/duplicate', [AdminContentController::class, 'duplicate'])->where('collection', CmsCollections::NAMES)->whereNumber('id');
-        Route::put('/settings/{group}', [AdminContentController::class, 'settings'])->where('group', 'home|contact|social|skin|shape|doctors|theme');
+        Route::put('/settings/{group}', [AdminContentController::class, 'settings'])->where('group', 'home|contact|social|skin|shape|doctors|theme|seo');
         Route::post('/categories/{group}', [AdminContentController::class, 'categoryStore'])->where('group', 'skin|shape|articles');
         Route::put('/categories/{group}/{id}', [AdminContentController::class, 'categoryUpdate'])->where('group', 'skin|shape|articles')->whereNumber('id');
         Route::delete('/categories/{group}/{id}', [AdminContentController::class, 'categoryDestroy'])->where('group', 'skin|shape|articles')->whereNumber('id');

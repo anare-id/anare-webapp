@@ -10,8 +10,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 final class Article extends Model
 {
     use \App\Models\Concerns\HasPublication;
+    use \App\Models\Concerns\HasSeo;
 
-    protected $fillable = ['category_id', 'slug', 'title', 'title_en', 'description', 'description_en', 'body', 'body_en', 'image', 'author', 'date', 'featured', 'status', 'sort_order'];
+    protected $fillable = ['category_id', 'slug', 'title', 'title_en', 'description', 'description_en', 'body', 'body_en', 'body_format', 'image', 'image_alt', 'image_alt_en', 'author', 'date', 'featured', 'status', 'sort_order'];
 
     protected function casts(): array
     {

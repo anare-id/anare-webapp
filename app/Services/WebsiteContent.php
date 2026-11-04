@@ -36,6 +36,9 @@ class WebsiteContent
     public function localize(Model $record, array $fields): array
     {
         $item = \App\Support\OptimizedImages::record($record->toArray());
+        foreach (['seo_title', 'meta_description', 'image_alt', 'catalog_image_alt', 'comparison_before_alt', 'comparison_after_alt', 'home_image_alt', 'schedule_image_alt', 'mobile_image_alt'] as $field) {
+            if (array_key_exists($field, $item)) $item[$field] = LocalizedContent::field($item, $field);
+        }
         foreach ($fields as $field) {
             $item[$field] = LocalizedContent::field($item, $field);
         }

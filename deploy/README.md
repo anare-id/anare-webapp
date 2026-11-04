@@ -42,3 +42,9 @@ The staging frontend was visually inspected in a browser. Real database Super Ad
 Account update: the owner requested separate permanent accounts. Local and development databases now have `superadmin` with only `super-admin`, and `admin` with only `admin`. Both real password logins were verified; Admin account/role management is denied with HTTP 403. Passwords were reset during this requested provisioning and are intentionally not stored in repository documentation. Replace development credentials before a production cutover.
 
 Code rollback was exercised on hosting: commit `94cd196530cefe3b026df7ce729f11b4f1bd3f9e` was switched to `9fe6f4288121d6515bb4898fb3edbb21bf2588e9`, origin health passed, then restored to `94cd196530cefe3b026df7ce729f11b4f1bd3f9e`. The same authenticated session and uploaded image still returned HTTP 200 after both switches. Temporary verification cron jobs were removed; only the once-per-minute activator remains. Cloudflare zone status is active and public resolver 1.1.1.1 reports its assigned nameservers.
+
+## SEO release
+
+The SEO migration adds nullable metadata/Alt Text and a text/html article format marker without rewriting existing content. The activator runs it through the existing forward migration step; no reseed/reset is required. Quill assets ship inside the release, and HTML Purifier is a production Composer dependency.
+
+Keep `SEO_ALLOW_INDEXING=false` on development. The application and Apache staging host header send `noindex, follow`; the dynamic sitemap is empty while indexing is disabled. A later approved production cutover must set the correct `APP_URL` and enable indexing explicitly, then verify Search Console ownership and submit the production sitemap. Installing an HTML verification token in CMS does not itself complete Google's verification. Do not change the main WordPress site or submit the development sitemap as part of a development deploy.

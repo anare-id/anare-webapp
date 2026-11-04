@@ -12,7 +12,7 @@
     <div class="card-grid">
         @forelse($articles as $article)
             <article class="service-card" data-category="{{ $article['category_slug'] }}">
-                @if($article['image'])<img src="{{ asset($article['image']) }}" alt="{{ $article['title'] }}" loading="lazy">@endif
+                @if($article['image'])<img src="{{ asset($article['image']) }}" alt="{{ $article['image_alt'] ?? '' ?: $article['title'] }}" loading="lazy">@endif
                 <div class="card-copy">
                     <small>{{ $article['category_title'] }}</small>
                     @if($article['date'])<time datetime="{{ $article['date'] }}">{{ \Carbon\Carbon::parse($article['date'])->locale(app()->getLocale())->translatedFormat('d F Y') }}</time>@endif

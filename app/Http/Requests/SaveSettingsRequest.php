@@ -20,6 +20,15 @@ final class SaveSettingsRequest extends FormRequest
     public function rules(): array
     {
         $group = (string) $this->route('group');
+        if ($group === 'seo') {
+            $rules = ['google_verification' => ['sometimes', 'nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9_-]+$/D']];
+            foreach (config('seo.pages') as $page => $label) {
+                foreach (['seo_title', 'seo_title_en'] as $field) $rules[$page.'_'.$field] = ['sometimes', 'nullable', 'string', 'max:255'];
+                foreach (['meta_description', 'meta_description_en'] as $field) $rules[$page.'_'.$field] = ['sometimes', 'nullable', 'string', 'max:1000'];
+                $rules[$page.'_is_indexable'] = ['sometimes', 'boolean'];
+            }
+            return $rules;
+        }
         $text = ['sometimes', 'nullable', 'string', 'max:2000'];
         $rules = match ($group) {
             'home' => array_fill_keys(['services_title', 'services_title_en', 'doctors_title', 'doctors_title_en', 'doctors_description', 'doctors_description_en', 'doctors_invitation', 'doctors_invitation_en', 'instagram_title', 'instagram_title_en', 'reviews_title', 'reviews_title_en', 'location_title', 'location_title_en'], $text) + [
@@ -32,6 +41,8 @@ final class SaveSettingsRequest extends FormRequest
                 'maps' => ['sometimes', 'nullable', 'string', 'max:2048', new WebLink()],
                 'map_embed' => ['sometimes', 'nullable', 'url:https', 'max:2048', 'regex:~^https://(?:www\.)?(?:google\.com/maps/embed(?:\?|/)|maps\.google\.com/maps\?)~'],
                 'location_image' => ['sometimes', 'nullable', 'string', 'max:1024', new LocalImage()],
+                'location_image_alt' => ['sometimes', 'nullable', 'string', 'max:500'],
+                'location_image_alt_en' => ['sometimes', 'nullable', 'string', 'max:500'],
             ],
             'social' => array_fill_keys(['clinic', 'shape'], ['sometimes', 'nullable', 'url:https', 'max:2048', new WebLink()]) + ['skin' => ['prohibited']],
             'skin', 'shape' => array_fill_keys(['name', 'name_en', 'title', 'title_en', 'description', 'description_en'], $text) + [

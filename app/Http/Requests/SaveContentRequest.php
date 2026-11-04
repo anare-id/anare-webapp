@@ -43,6 +43,14 @@ final class SaveContentRequest extends FormRequest
             'status' => ['sometimes', 'required', Rule::in(['draft', 'published'])],
             'sort_order' => ['sometimes', 'integer', 'min:0', 'max:1000000'],
         ];
+        foreach (['image', 'catalog_image', 'comparison_before', 'comparison_after', 'home_image', 'schedule_image', 'mobile_image'] as $field) {
+            if (in_array($field.'_alt', $model->getFillable(), true)) $this->translated($rules, $field.'_alt', 500);
+        }
+        if (in_array($collection, ['skin', 'shape', 'doctors', 'articles'], true)) {
+            $this->translated($rules, 'seo_title', 255);
+            $this->translated($rules, 'meta_description', 1000);
+            $rules['is_indexable'] = ['sometimes', 'boolean'];
+        }
         if ($collection !== 'reviews') {
             $rules['image'] = ['sometimes', 'nullable', 'string', 'max:1024', new LocalImage()];
         }
@@ -89,6 +97,7 @@ final class SaveContentRequest extends FormRequest
         }
         if ($collection === 'articles') {
             $this->translated($rules, 'body', 200000);
+            $rules['body_format'] = ['sometimes', Rule::in(['text', 'html'])];
             $rules['author'] = ['sometimes', 'nullable', 'string', 'max:255'];
             $rules['date'] = ['sometimes', 'nullable', 'date_format:Y-m-d'];
         }

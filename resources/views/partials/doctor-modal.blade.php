@@ -5,10 +5,10 @@
         <div class="doctor-modal-grid">
             <aside class="doctor-modal-identity" aria-label="{{ __('site.doctors.photo_schedule') }}">
                 @if(!empty($doctor['schedule_image']))
-                    <img class="doctor-schedule-image" src="{{ asset($doctor['schedule_image']) }}" alt="{{ __('site.doctors.schedule_alt', ['name' => $doctor['name'], 'schedule' => $doctor['schedule_summary']]) }}" @if($doctor['schedule_width']) width="{{ $doctor['schedule_width'] }}" @endif @if($doctor['schedule_height']) height="{{ $doctor['schedule_height'] }}" @endif loading="lazy" decoding="async">
+                    <img class="doctor-schedule-image" src="{{ asset($doctor['schedule_image']) }}" alt="{{ $doctor['schedule_image_alt'] ?? '' ?: __('site.doctors.schedule_alt', ['name' => $doctor['name'], 'schedule' => $doctor['schedule_summary']]) }}" @if($doctor['schedule_width']) width="{{ $doctor['schedule_width'] }}" @endif @if($doctor['schedule_height']) height="{{ $doctor['schedule_height'] }}" @endif loading="lazy" decoding="async">
                 @else
                     <div class="doctor-modal-dummy">
-                        @if($doctor['profile_image'])<img src="{{ asset($doctor['profile_image']) }}" alt="{{ $doctor['name'] }}" width="1148" height="1371" loading="lazy">@endif
+                        @if($doctor['profile_image'])<img src="{{ asset($doctor['profile_image']) }}" alt="{{ $doctor['image_alt'] ?? '' ?: $doctor['name'] }}" width="1148" height="1371" loading="lazy">@endif
                     </div>
                 @endif
             </aside>

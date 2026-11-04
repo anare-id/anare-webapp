@@ -7,7 +7,7 @@
                     @if(!empty($slide['mobile_image']))
                         <source media="(max-width: 600px), (max-width: 1024px) and (orientation: portrait)" srcset="{{ asset($slide['mobile_image']) }}">
                     @endif
-                    <img src="{{ asset($slide['image'] ?: $slide['mobile_image']) }}" alt="{{ $slide['alt'] }}" loading="{{ $loop->first ? 'eager' : 'lazy' }}" fetchpriority="{{ $loop->first ? 'high' : 'low' }}" decoding="async">
+                    <img src="{{ asset($slide['image'] ?: $slide['mobile_image']) }}" alt="{{ ($slide['image_alt'] ?? '') ?: $slide['alt'] }}" data-desktop-alt="{{ ($slide['image_alt'] ?? '') ?: $slide['alt'] }}" data-mobile-alt="{{ ($slide['mobile_image_alt'] ?? '') ?: ($slide['image_alt'] ?? '') ?: $slide['alt'] }}" loading="{{ $loop->first ? 'eager' : 'lazy' }}" fetchpriority="{{ $loop->first ? 'high' : 'low' }}" decoding="async">
                 </picture>
                 @endif
                 @if(($showSlideContent ?? true) && (!empty($slide['title']) || !empty($slide['description']) || !empty($slide['button'])))

@@ -49,7 +49,7 @@
     const listFor = key => (key.startsWith('hero:') ? state.heroes?.[key.split(':')[1]] : state[key]) || [];
     const canView = key => can(`${moduleFor(key)}.view`);
     const canChange = (key, operation, item = null) => can(`${moduleFor(key)}.${operation}`) && (!item || item.status !== 'published' || can(`${moduleFor(key)}.publish`));
-    const canSettings = group => ['contact', 'social', 'theme'].includes(group) ? can('settings.update') : can(`${group}.update`) && can(`${group}.publish`);
+    const canSettings = group => ['contact', 'social', 'theme', 'seo'].includes(group) ? can('settings.update') : can(`${group}.update`) && can(`${group}.publish`);
     const canCategory = (operation, item = null) => can(`${collection}.${operation}`) && (!item || !listFor(collection).some(entry => entry.category === item.slug && entry.status === 'published') || can(`${collection}.publish`));
     const deny = () => toast('Anda tidak memiliki izin untuk tindakan ini.', true);
 
@@ -317,7 +317,7 @@
     }
 
     function settingsFields(group) {
-        return `<div class="field-grid">${settingsSchema[group].map(([name, label, type = 'text']) => field(name, label, state.settings[group]?.[name], type, group === 'social', ['name', 'title', 'services_title'].includes(name) ? 'required' : '')).join('')}</div>`;
+        return `<div class="field-grid">${settingsSchema[group].map(([name, label, type = 'text']) => field(name, label, state.settings[group]?.[name], type, group === 'social', ['name', 'title', 'services_title'].includes(name) ? 'required' : '')).join('')}${group === 'contact' ? field('location_image_alt', 'Alt Text foto lokasi — Indonesia', state.settings.contact.location_image_alt) + field('location_image_alt_en', 'Alt Text location photo — English', state.settings.contact.location_image_alt_en) : ''}</div>`;
     }
 
     function settingsForm(group) {
@@ -412,10 +412,17 @@
         updateThemePreview(form);
     });
 
+    function seoSettingsForm() {
+        if (!state.settings.seo) return '';
+        const values = state.settings.seo;
+        return `<form class="settings-form" data-settings-form="seo"><fieldset class="settings-fields" ${canSettings('seo') ? '' : 'disabled'}>${field('google_verification', 'Google Search Console — verification token (bukan seluruh tag HTML)', values.google_verification)}<p class="editor-hint">Sitemap: <a href="/sitemap.xml" target="_blank" rel="noopener">/sitemap.xml</a>. Masukkan token dari metode HTML tag Google. Verifikasi DNS dilakukan melalui penyedia DNS. Jangan submit sitemap dev; indexing production memerlukan SEO_ALLOW_INDEXING=true.</p>${Object.entries(state.seo_pages || {}).map(([key, label]) => `<details class="theme-palette-group"><summary>${escape(label)}</summary><div class="field-grid" style="padding:20px">${field(`${key}_seo_title`, 'SEO Title — Indonesia', values[`${key}_seo_title`])}${field(`${key}_seo_title_en`, 'SEO Title — English', values[`${key}_seo_title_en`])}${field(`${key}_meta_description`, 'Meta Description — Indonesia', values[`${key}_meta_description`], 'textarea')}${field(`${key}_meta_description_en`, 'Meta Description — English', values[`${key}_meta_description_en`], 'textarea')}${selectField(`${key}_is_indexable`, 'Google Index', String(values[`${key}_is_indexable`]), { true: 'Index', false: 'Noindex' })}</div></details>`).join('')}</fieldset>${canSettings('seo') ? '<div class="settings-form-footer"><button type="submit" class="button button-dark">Simpan pengaturan SEO</button></div>' : ''}</form>`;
+    }
+
     function renderSettings() {
         $('#contact-settings').innerHTML = settingsForm('contact');
         $('#social-settings').innerHTML = settingsForm('social');
         $('#theme-settings').innerHTML = themeForm();
+        $('#seo-settings').innerHTML = seoSettingsForm();
         const theme = $('[data-settings-form="theme"]');
         if (theme) updateThemePreview(theme);
     }
@@ -477,6 +484,60 @@
         return `<label class="field"><span>${label}</span><select name="${name}">${Object.entries(options).map(([key, text]) => `<option value="${escape(key)}" ${key === value ? 'selected' : ''}>${escape(text)}</option>`).join('')}</select></label>`;
     }
 
+    const richHtml = quill => quill.getText().trim() || quill.root.querySelector('img') ? quill.getSemanticHTML() : '';
+    const articleEditors = [];
+    function initializeArticleEditors(item) {
+        articleEditors.length = 0;
+        for (const name of ['body', 'body_en']) {
+            const textarea = $(`[name="${name}"]`, editorForm);
+            const container = document.createElement('div');
+            textarea.after(container);
+            textarea.hidden = true;
+            const quill = new Quill(container, { theme: 'snow', modules: { toolbar: [[{ header: [1, 2, 3, false] }], ['bold', 'italic'], [{ list: 'ordered' }, { list: 'bullet' }], ['link', 'image'], ['clean']] } });
+            if (item.body_format === 'html') quill.clipboard.dangerouslyPasteHTML(textarea.value);
+            else quill.setText(textarea.value);
+            quill.root.setAttribute('aria-label', name === 'body' ? 'Isi artikel Indonesia' : 'Article content English');
+            quill.getModule('toolbar').addHandler('link', value => {
+                if (!value) return quill.format('link', false);
+                const url = window.prompt('URL tautan (https:// atau /skin/slug untuk internal link):');
+                if (url === null) return;
+                if (safeLink(url.trim()) === '#') return editorError('Gunakan URL https:// atau path internal seperti /skin/acne-injection.');
+                const range = quill.getSelection(true);
+                if (range?.length) quill.format('link', url.trim(), 'user');
+                else quill.insertText(range?.index ?? quill.getLength() - 1, url.trim(), { link: url.trim() }, 'user');
+            });
+            quill.getModule('toolbar').addHandler('image', () => {
+                if (!can('media.upload')) return deny();
+                const input = document.createElement('input');
+                input.type = 'file'; input.accept = 'image/jpeg,image/png,image/webp,image/gif';
+                input.addEventListener('change', async () => {
+                    if (!input.files[0]) return;
+                    const alt = window.prompt('Alt Text gambar (jelaskan isi gambar):');
+                    if (alt === null) return;
+                    const context = editorContext;
+                    uploadsPending++;
+                    try {
+                        const data = new FormData(); data.append('image', input.files[0]);
+                        const result = await request('/admin/uploads', 'POST', data);
+                        if (!editor.open || editorContext !== context) return;
+                        const range = quill.getSelection(true) || { index: quill.getLength() - 1 };
+                        quill.insertEmbed(range.index, 'image', result.url, 'user');
+                        quill.root.querySelectorAll('img').forEach(image => { if (image.getAttribute('src') === result.url) image.alt = alt; });
+                        textarea.value = richHtml(quill);
+                    } catch (error) { editorError(error.message); } finally { uploadsPending--; }
+                });
+                input.click();
+            });
+            quill.root.addEventListener('dblclick', event => {
+                if (event.target.tagName !== 'IMG') return;
+                const alt = window.prompt('Alt Text gambar:', event.target.alt);
+                if (alt !== null) { event.target.alt = alt; textarea.value = richHtml(quill); }
+            });
+            quill.on('text-change', () => { textarea.value = richHtml(quill); });
+            articleEditors.push({ name, quill });
+        }
+    }
+
     function imageField(item, name = 'image', title = 'Foto konten') {
         const records = [...state.skin, ...state.shape, ...state.doctors, ...state.articles, ...state.services, ...Object.values(state.heroes).flat()];
         const imageNames = ['image', 'catalog_image', 'home_image', 'schedule_image', 'mobile_image', 'comparison_before', 'comparison_after'];
@@ -510,6 +571,10 @@
         if (['doctors', 'articles'].includes(key)) html += `<label class="field full"><span>Tampilkan di beranda</span><span class="switch-control"><input type="checkbox" name="featured" ${item.featured ? 'checked' : ''} aria-label="Tampilkan di beranda"></span></label>`;
         html += field('sort_order', 'Urutan tampilan', item.sort_order ?? 0, 'number', false, 'min="0"');
         html += '</div>';
+        if (['skin', 'shape', 'doctors', 'articles'].includes(key)) {
+            html += `<div class="editor-section-title">SEO & Indexing</div><div class="field-grid">${field('seo_title', 'SEO Title — Indonesia', item.seo_title)}${field('seo_title_en', 'SEO Title — English', item.seo_title_en)}${field('meta_description', 'Meta Description — Indonesia', item.meta_description, 'textarea')}${field('meta_description_en', 'Meta Description — English', item.meta_description_en, 'textarea')}${selectField('is_indexable', 'Google Index', String(item.is_indexable ?? true), { true: 'Index — boleh muncul di Google', false: 'Noindex — jangan tampil di Google' })}</div><p class="editor-hint">Kosongkan metadata untuk memakai judul/ringkasan artikel. Dev/staging tetap noindex. Google dapat menyesuaikan judul dan cuplikan hasil pencarian.</p>`;
+        }
+        if (key === 'articles') html += '<input type="hidden" name="body_format" value="html"><p class="editor-hint">Judul artikel sudah H1. Gunakan H2/H3 untuk subbagian. Gambar isi: klik dua kali untuk mengedit Alt Text.</p>';
         if (key !== 'reviews') html += imageField(item);
         if (key === 'doctors') html += imageField(item, 'home_image', 'Foto dokter beranda') + imageField(item, 'schedule_image', 'Foto & jadwal praktik');
         if (isHero) html += imageField(item, 'mobile_image', 'Foto hero mobile');
@@ -519,6 +584,12 @@
         }
         html += '<p class="editor-hint">Konten dipublikasikan akan tampil di website setelah disimpan. Gunakan status Draft untuk menyimpannya tanpa ditampilkan.</p><div class="form-error editor-error" role="alert" hidden></div>';
         $('#editor-body').innerHTML = html;
+        for (const name of ['image', 'catalog_image', 'comparison_before', 'comparison_after', 'home_image', 'schedule_image', 'mobile_image']) {
+            if (!$(`[name="${name}"]`, editorForm)) continue;
+            const imageArea = $(`[data-image-field="${name}"]`, editorForm);
+            imageArea?.insertAdjacentHTML('afterend', `<div class="field-grid">${field(`${name}_alt`, `Alt Text ${name.replaceAll('_', ' ')} — Indonesia`, item[`${name}_alt`])}${field(`${name}_alt_en`, `Alt Text ${name.replaceAll('_', ' ')} — English`, item[`${name}_alt_en`])}</div>`);
+        }
+        if (key === 'articles') initializeArticleEditors(item);
         openDialog(editor);
     }
 
@@ -557,9 +628,11 @@
         event.preventDefault();
         if (!editorContext || mutationPending || uploadsPending || !editorForm.reportValidity()) return;
         const { key, id } = editorContext;
+        if (key === 'articles') for (const rich of articleEditors) $(`[name="${rich.name}"]`, editorForm).value = richHtml(rich.quill);
         const fields = Object.fromEntries(new FormData(editorForm));
         for (const name in fields) if (typeof fields[name] === 'string') fields[name] = fields[name].trim();
         $$('input[type="checkbox"][name]', editorForm).forEach(input => fields[input.name] = input.checked);
+        if ('is_indexable' in fields) fields.is_indexable = fields.is_indexable === 'true';
         let path;
         let method = id ? 'PUT' : 'POST';
         if (key.startsWith('settings:')) {
@@ -768,6 +841,7 @@
         if (!canSettings(form.dataset.settingsForm)) return deny();
         if (mutationPending || uploadsPending || !form.reportValidity()) return;
         const fields = Object.fromEntries(new FormData(form));
+        if (form.dataset.settingsForm === 'seo') for (const name of Object.keys(fields)) if (name.endsWith('_is_indexable')) fields[name] = fields[name] === 'true';
         mutate(`/admin/settings/${encodeURIComponent(form.dataset.settingsForm)}`, 'PUT', fields, 'Pengaturan berhasil disimpan.', form);
     });
 

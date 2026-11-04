@@ -233,6 +233,19 @@ Session/cache menggunakan file dan queue menggunakan `sync`; tidak memerlukan ta
 
 Galeri Instagram tetap memakai cache postingan hasil fetch; refresh opsional memerlukan token akun profesional di `.env`. Link akun berasal dari pengaturan CMS. Ulasan kini otoritatif dari CMS; refresh browser tidak menimpa ulasan editor dengan snapshot/API eksternal. Booking tetap berupa tautan WhatsApp, bukan sistem appointment.
 
+## SEO, Alt Text, dan editor artikel
+
+- **Pengaturan → SEO & Google Search Console**: SEO Title, Meta Description, dan Index/Noindex untuk Beranda, Skin, Shape, Dokter, serta Artikel, masing-masing dalam Indonesia/English. Buka panel halaman untuk mengisi metadata.
+- **Editor artikel/dokter/treatment**: metadata per detail terpisah dari judul dan ringkasan yang terlihat. Metadata kosong memakai konten tampilan; mengubah SEO tidak mengganti heading artikel.
+- Alt Text tersedia per gambar konten, termasuk banner desktop/mobile, katalog, foto dokter/jadwal, before/after, dan foto lokasi. Teks kosong memakai fallback kontekstual; gambar dekoratif tetap mempunyai alt kosong.
+- Isi artikel memakai Quill 2.0.3 lokal: heading, bold/italic, daftar, tautan internal/HTTPS, serta upload gambar. Judul artikel sudah H1; gunakan H2/H3 untuk subbagian. Klik dua kali gambar isi untuk mengubah Alt Text. Upload tunduk pada permission media dan batas upload CMS.
+- HTML disanitasi saat simpan dan render dengan HTML Purifier. Script, handler event, iframe, URL JavaScript, dan gambar remote ditolak/dihapus. Artikel teks lama tetap escaped sampai dikonversi lewat editor; terjemahan lama yang tidak dikirim saat konversi tetap dipertahankan sebagai teks aman.
+- `/sitemap.xml` otomatis membaca halaman dan detail published yang Index; Draft/Noindex/admin tidak disertakan. Canonical detail membuang parameter kategori/page/tracking. `/robots.txt` memuat sitemap hanya saat indexing diizinkan.
+- Indexing publik memerlukan `SEO_ALLOW_INDEXING=true` pada environment domain produksi yang sudah disetujui. Default `false`; host `dev.*`/`staging.*` tetap `noindex` melalui HTML dan header, dengan sitemap kosong. Robots staging mengizinkan crawl supaya crawler dapat membaca noindex; noindex bukan kontrol akses.
+- Search Console: field token menerima **nilai content** dari metode HTML tag, bukan seluruh tag. Menyimpan token hanya memasang tag, bukan menyelesaikan verifikasi Google. Pemilik harus melakukan Verify di Search Console dan submit sitemap domain produksi setelah cutover. Domain property memakai verifikasi DNS di penyedia DNS. Jangan submit sitemap dev.
+
+Verifikasi SEO lokal: **82 tes / 873 assertion lulus**; browser menguji simpan metadata terpisah, H2/bold, tautan treatment, upload nyata dan persistensi Alt Text, fallback terjemahan kosong, serta pengaturan mobile 390px tanpa overflow. Audit Composer tidak melaporkan advisory dari cache; pembaruan data Packagist timeout sehingga bukan bukti audit online terbaru.
+
 ## Verifikasi
 
 ```powershell

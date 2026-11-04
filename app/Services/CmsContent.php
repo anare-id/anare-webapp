@@ -45,7 +45,7 @@ final class CmsContent
                 ? $this->records(HeroSlide::where('section', $section)) : [];
         }
         $settingGroups = array_values(array_filter(
-            ['home', 'skin', 'shape', 'doctors', 'contact', 'social', 'theme'],
+            ['home', 'skin', 'shape', 'doctors', 'contact', 'social', 'theme', 'seo'],
             fn (string $group): bool => CmsAccess::can($user, CmsAccess::group($group).'.view')
         ));
         if ($settingGroups !== []) {
@@ -56,6 +56,8 @@ final class CmsContent
             $state['theme_schema'] = ThemePalette::schema();
             $state['theme_sections'] = config('theme.sections');
             $state['theme_presets'] = ThemePalette::presets();
+            $state['settings']['seo'] = array_replace(SeoContent::defaults(), $state['settings']['seo'] ?? []);
+            $state['seo_pages'] = config('seo.pages');
         }
         if (CmsAccess::can($user, 'activity.view')) {
             $state['activity'] = Activity::latest('id')->limit(50)->get()->map(fn (Activity $activity): array => [
