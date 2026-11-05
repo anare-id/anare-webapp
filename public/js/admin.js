@@ -508,6 +508,13 @@
         for (const base of fields) for (const name of [base, `${base}_en`]) {
             const textarea = $(`[name="${name}"]`, root);
             if (!textarea) continue;
+            const wrapper = textarea.closest('label.field');
+            if (wrapper) {
+                const fieldGroup = document.createElement('div');
+                fieldGroup.className = wrapper.className;
+                fieldGroup.append(...wrapper.childNodes);
+                wrapper.replaceWith(fieldGroup);
+            }
             const container = document.createElement('div');
             textarea.after(container);
             container.className = base === 'body' ? 'rich-body-editor' : 'rich-compact-editor';
@@ -523,6 +530,9 @@
             container.previousElementSibling?.classList.contains('ql-toolbar') && container.previousElementSibling.setAttribute('aria-label', `Format ${label.textContent}`);
             quill.root.setAttribute('aria-labelledby', label.id);
             if (!writable) { editors.push({ name, quill }); continue; }
+            quill.getModule('toolbar').container.addEventListener('mousedown', event => {
+                if (event.target.closest('button')) event.preventDefault();
+            });
             quill.getModule('toolbar').addHandler('link', value => {
                 if (!value) return quill.format('link', false);
                 const url = window.prompt('URL tautan (https:// atau /skin/slug untuk internal link):');
