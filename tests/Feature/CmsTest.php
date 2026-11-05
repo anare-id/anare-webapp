@@ -393,4 +393,110 @@ final class CmsTest extends TestCase
         $this->assertDatabaseMissing('articles', ['slug' => $deletedSlug]);
         $this->assertDatabaseCount('users', 0);
     }
+    public function test_rich_fields_are_sanitized_localized_and_projected_as_plain_text(): void
+    {
+        $this->actingAs($this->administrator());
+        $this->postJson('/admin/content/doctors', [
+            'title' => 'Rich Doctor', 'slug' => 'rich-doctor', 'status' => 'published',
+            'description' => '<p><strong>Biografi</strong><script>alert(1)</script></p>',
+            'description_en' => '<em>Literal translation</em>',
+            'education' => '<ul><li>Medical degree</li></ul>',
+            'expertise' => '<p>First expertise</p><p>Second expertise</p>',
+            'schedule' => '<p>Monday <strong>09:00</strong></p>',
+            'content_formats' => ['description' => 'html', 'education' => 'html', 'expertise' => 'html', 'schedule' => 'html'],
+        ])->assertOk();
+        $doctor = Doctor::query()->where('slug', 'rich-doctor')->firstOrFail();
+        $this->assertStringNotContainsString('<script', $doctor->description);
+        $this->withSession(['locale' => 'id'])->get('/doctors/rich-doctor')->assertOk()
+            ->assertSee('<strong>Biografi</strong>', false)->assertSee('<li>Medical degree</li>', false)
+            ->assertSee('doctor-expertise-content', false)->assertDontSee('doctor-expertise-grid', false);
+        $this->withSession(['locale' => 'en'])->get('/doctors/rich-doctor')->assertOk()
+            ->assertSee('&lt;em&gt;Literal translation&lt;/em&gt;', false);
+        $item = app(\App\Services\WebsiteContent::class)->doctor($doctor);
+        $this->assertIsString($item['expertise']);
+        $this->assertSame('First expertise'."\n".'Second expertise', $item['expertise']);
+        $state = $this->getJson('/admin/content')->assertOk()->json();
+        $this->assertContains('expertise', $state['rich_fields']['doctors']);
+        $this->assertSame('Biografi', $state['doctors'][0]['plain_fields']['description']);
+        $this->assertStringContainsString('<strong>', $state['doctors'][0]['description']);
+    }
+
+    public function test_partial_format_updates_preserve_unrelated_fields_and_legacy_translations(): void
+    {
+        $doctor = Doctor::query()->create([
+            'title' => 'Legacy Doctor', 'slug' => 'legacy-doctor', 'status' => 'published',
+            'description' => '<b>Literal original</b>', 'description_en' => '<b>Literal English</b>',
+            'education' => '<p>Existing education</p>', 'content_formats' => ['education' => 'html'],
+        ]);
+        $this->actingAs($this->administrator())->putJson('/admin/content/doctors/'.$doctor->id, [
+            'content_formats' => ['description' => 'html'],
+        ])->assertOk();
+        $doctor->refresh();
+        $this->assertSame('html', $doctor->content_formats['education']);
+        $this->assertSame('<b>Literal English</b>', $doctor->description_en);
+        $this->assertSame('&lt;b&gt;Literal original&lt;/b&gt;', $doctor->description);
+        $this->withSession(['locale' => 'en'])->get('/doctors/legacy-doctor')->assertOk()
+            ->assertSee('&lt;b&gt;Literal English&lt;/b&gt;', false);
+        $this->putJson('/admin/content/doctors/'.$doctor->id, ['title' => 'Changed title'])->assertOk();
+        $this->assertSame(['education' => 'html', 'description' => 'html'], $doctor->fresh()->content_formats);
+    }
+
+    public function test_rich_settings_merge_formats_and_keep_plain_attribute_projection(): void
+    {
+        $this->actingAs($this->administrator());
+        $this->putJson('/admin/settings/home', [
+            'doctors_description' => '<p><strong>Our doctors</strong></p>',
+            'doctors_invitation' => '<p>Welcome</p>',
+            'content_formats' => ['doctors_description' => 'html', 'doctors_invitation' => 'html'],
+        ])->assertOk();
+        $this->putJson('/admin/settings/home', [
+            'doctors_description_en' => '<p><em>English doctors</em></p>',
+            'content_formats' => ['doctors_description_en' => 'html'],
+        ])->assertOk();
+        $this->putJson('/admin/settings/contact', [
+            'address' => '<p>Street <strong>One</strong><img src="https://evil.test/a.png" onerror="bad()"></p>',
+            'content_formats' => ['address' => 'html'],
+        ])->assertOk();
+        $formats = SiteSetting::query()->where('group', 'home')->firstOrFail()->values['content_formats'];
+        $this->assertSame('html', $formats['doctors_invitation']);
+        $this->assertSame('html', $formats['doctors_description_en']);
+        app()->setLocale('en');
+        $website = app(\App\Services\WebsiteContent::class);
+        $this->assertSame('English doctors', $website->text('home', 'doctors_description'));
+        $this->assertStringContainsString('<em>English doctors</em>', $website->settingHtml('home', 'doctors_description'));
+        $this->assertSame('Street One', $website->text('contact', 'address'));
+        $this->withSession(['locale' => 'en'])->get('/')->assertOk()
+            ->assertSee('<em>English doctors</em>', false)->assertSee('<strong>One</strong>', false)
+            ->assertDontSee('onerror=', false)->assertDontSee('https://evil.test/a.png', false);
+    }
+
+    public function test_only_eligible_exact_format_keys_and_values_are_accepted(): void
+    {
+        $this->actingAs($this->administrator());
+        foreach ([['title' => 'html'], ['description' => 'markdown'], ['description_fr' => 'html']] as $formats) {
+            $this->postJson('/admin/content/services', ['title' => 'Service', 'content_formats' => $formats])
+                ->assertUnprocessable();
+        }
+        $this->putJson('/admin/settings/contact', ['content_formats' => ['name' => 'html']])->assertUnprocessable();
+        $this->putJson('/admin/settings/seo', ['content_formats' => ['home_seo_title' => 'html']])->assertUnprocessable();
+        $this->putJson('/admin/settings/home', ['doctors_description' => str_repeat('Long rich content ', 200), 'content_formats' => ['doctors_description' => 'html']])->assertOk();
+    }
+
+    public function test_treatment_conditions_services_heroes_and_reviews_render_sanitized_rich_content(): void
+    {
+        $this->category();
+        $this->actingAs($this->administrator());
+        $this->postJson('/admin/content/skin', array_replace($this->treatmentPayload(), [
+            'description' => '<p><strong>Treatment details</strong></p>', 'pre' => '<ul><li>Before care</li></ul>',
+            'content_formats' => ['description' => 'html', 'pre' => 'html'],
+        ]))->assertOk();
+        $this->postJson('/admin/content/services', ['title' => 'Rich service', 'status' => 'published', 'description' => '<p><em>Service details</em></p>', 'content_formats' => ['description' => 'html']])->assertOk();
+        $this->postJson('/admin/content/reviews', ['title' => 'Client', 'status' => 'published', 'description' => '<p><strong>Client review</strong></p>', 'content_formats' => ['description' => 'html']])->assertOk();
+        $this->postJson('/admin/content/hero-home', ['title' => 'Hero', 'status' => 'published', 'description' => '<p><em>Hero details</em></p>', 'content_formats' => ['description' => 'html']])->assertOk();
+        $this->withSession(['locale' => 'id'])->get('/skin/clinical-care')->assertOk()
+            ->assertSee('<strong>Treatment details</strong>', false)->assertSee('<li>Before care</li>', false);
+        $this->get('/')->assertOk()->assertSee('<em>Service details</em>', false)
+            ->assertSee('<strong>Client review</strong>', false)->assertSee('<em>Hero details</em>', false);
+    }
+
 }

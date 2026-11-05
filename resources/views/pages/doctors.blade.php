@@ -7,6 +7,7 @@
     @include('partials.hero-slideshow', ['id' => 'doctors-hero', 'label' => __('site.hero.gallery', ['name' => $website->text('contact', 'name')]), 'slides' => $heroSlides, 'showSlideContent' => false])
 </section>
 <section id="doctor-list" class="container section" aria-label="{{ __('site.doctors.directory') }}">
+    <div class="rich-content">{!! $website->settingHtml('doctors', 'description') !!}</div>
     <div class="doctor-grid">
         @foreach($doctors as $doctor)
             <a class="doctor-card doctor-modal-trigger" href="{{ route('doctors.detail', ['slug' => $doctor['slug']]) }}" data-doctor-dialog="doctor-modal-{{ $doctor['id'] }}" aria-haspopup="dialog" aria-controls="doctor-modal-{{ $doctor['id'] }}">

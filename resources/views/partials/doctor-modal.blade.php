@@ -15,15 +15,12 @@
             <div class="doctor-modal-information">
                 <section class="doctor-modal-education" aria-labelledby="doctor-education-{{ $doctorIndex }}">
                     <h3 id="doctor-education-{{ $doctorIndex }}">{{ __('site.doctors.education') }}</h3>
-                    <p>{{ $doctor['education'] }}</p>
+                    <div class="rich-content">{!! $doctor['education_html'] !!}</div>
                 </section>
+                <section class="doctor-modal-schedule"><h3>{{ __('site.doctors.schedule') }}</h3><div class="rich-content">{!! $doctor['schedule_html'] !!}</div></section>
                 <section class="doctor-modal-expertise" aria-labelledby="doctor-expertise-{{ $doctorIndex }}">
                     <h3 id="doctor-expertise-{{ $doctorIndex }}">{{ __('site.doctors.expertise') }}</h3>
-                    <div class="doctor-expertise-grid">
-                        @foreach($doctor['expertise'] as $expertise)
-                            <p>{{ $expertise }}</p>
-                        @endforeach
-                    </div>
+                    <div class="doctor-expertise-content rich-content">{!! $doctor['expertise_html'] !!}</div>
                 </section>
             </div>
         </div>

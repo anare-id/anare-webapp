@@ -388,8 +388,8 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
 @media (max-width: 600px) { .theme-preset-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }.theme-palette-group > summary { padding: 16px; }.theme-preset-row { padding: 16px 16px 0; }.theme-subheading { margin-inline: 16px; }.theme-dirty { flex-basis: 100%; margin-bottom: 5px; } }
 @media (max-width: 480px) { .theme-color-grid { grid-template-columns: 1fr; padding: 16px; }.theme-color-preview { margin: 0 16px 16px; } }
 .field .ql-toolbar { border-radius: 6px 6px 0 0; background: #f8fafb; }
-.field .ql-container { min-height: 240px; border-radius: 0 0 6px 6px; font: 13px/1.7 'DM Sans', sans-serif; }
-.field .ql-editor { min-height: 240px; max-height: 400px; overflow-y: auto; }
+.field .ql-container { height: auto; min-height: 240px; border-radius: 0 0 6px 6px; font: 13px/1.7 'DM Sans', sans-serif; }
+.field .ql-editor { height: auto; min-height: 240px; max-height: 400px; overflow-y: auto; }
 .field .ql-editor img { max-width: 100%; height: auto; }
 .field .ql-tooltip { left: 0 !important; max-width: 100%; white-space: normal; z-index: 5; }
 .field .ql-editor:focus-visible { outline: 2px solid #6798b5; outline-offset: -2px; }
@@ -402,3 +402,9 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
 .seo-verification { border-top: 1px solid var(--border); margin-top: 22px; padding-top: 22px; }
 .seo-verification > .field { max-width: 640px; }
 @media (max-width: 600px) { .seo-page-selector { align-items: stretch; flex-direction: column; gap: 10px; }.seo-page-selector > .field { width: 100%; }.seo-page-fields > .field.full { grid-column: 1 / -1; } }
+.field .rich-compact-editor, .field .rich-compact-editor .ql-editor { min-height: 130px; }
+.field .ql-toolbar { position: sticky; top: 0; z-index: 2; }
+.field .ql-toolbar button:focus-visible, .field .ql-picker-label:focus-visible { outline: 2px solid var(--blue); }
+.comparison-toggle { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px; border: 1px solid var(--border); border-radius: 6px; }
+.comparison-toggle > span { margin: 0; }
+#comparison-fields[hidden] { display: none; }

@@ -8,8 +8,8 @@
         <div>
             <h1>{{ $doctor['name'] }}</h1>
             <p>{{ $doctor['specialty'] }}</p>
-            <p class="article-content">{{ $doctor['description'] }}</p>
-            <div class="info-panel"><h3>{{ __('site.doctors.schedule') }}</h3><p class="article-content">{{ $doctor['schedule_summary'] }}</p></div>
+            <div class="article-content rich-content">{!! $doctor['description_html'] !!}</div>
+            <div class="info-panel"><h3>{{ __('site.doctors.schedule') }}</h3><div class="article-content rich-content">{!! $doctor['schedule_html'] !!}</div></div>
             @if($whatsappUrl)<a class="button" href="{{ $whatsappUrl }}" target="_blank" rel="noopener noreferrer">{{ __('site.common.book') }}</a>@endif
         </div>
     </div>
@@ -17,9 +17,9 @@
 <section class="container section">
     @if($doctor['schedule_image'])<img class="doctor-schedule-image" src="{{ asset($doctor['schedule_image']) }}" alt="{{ $doctor['schedule_image_alt'] ?? '' ?: __('site.doctors.schedule_alt', ['name' => $doctor['name'], 'schedule' => $doctor['schedule_summary']]) }}" loading="lazy">@endif
     <h2>{{ __('site.doctors.education') }}</h2>
-    <p class="article-content">{{ $doctor['education'] }}</p>
+    <div class="article-content rich-content">{!! $doctor['education_html'] !!}</div>
     <h2>{{ __('site.doctors.expertise') }}</h2>
-    <div class="doctor-expertise-grid">@foreach($doctor['expertise'] as $expertise)<p>{{ $expertise }}</p>@endforeach</div>
+    <div class="doctor-expertise-content rich-content">{!! $doctor['expertise_html'] !!}</div>
 </section>
 @if($otherDoctors)
 <section class="container section">

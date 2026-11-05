@@ -6,7 +6,7 @@
 <section class="skin-hero viewport-hero treatment-catalog-hero" aria-labelledby="skin-title" data-hero-carousel data-carousel-interval="{{ $heroInterval }}">
     <div class="skin-hero-content hero-content">
         <h1 id="skin-title">{{ $heroTitle }}</h1>
-        @if($heroDescription !== '')<p>{{ $heroDescription }}</p>@endif
+        @if($heroDescription !== '')<div class="rich-content">{!! $website->settingHtml($serviceKey, 'description') !!}</div>@endif
     </div>
     @include('partials.hero-slideshow', ['id' => $serviceKey.'-hero', 'label' => __('site.hero.gallery', ['name' => $serviceName]), 'slides' => $heroSlides, 'showSlideContent' => false])
 </section>

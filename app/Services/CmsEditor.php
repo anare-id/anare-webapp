@@ -31,16 +31,7 @@ final class CmsEditor
                 Category::query()->lockForUpdate()->findOrFail($categoryId);
             }
             abort_unless(CmsAccess::content($user, $collection, $id === null ? 'create' : 'update', $record, $attributes['status'] ?? null), 403);
-            if ($collection === 'articles' && ($attributes['body_format'] ?? $record->body_format) === 'html') {
-                if ($record->exists && $record->body_format !== 'html') {
-                    foreach (['body', 'body_en'] as $field) {
-                        if (!array_key_exists($field, $attributes) && $record->$field !== null) $attributes[$field] = nl2br(e($record->$field));
-                    }
-                }
-                foreach (['body', 'body_en'] as $field) {
-                    if (isset($attributes[$field])) $attributes[$field] = app(ArticleHtml::class)->sanitize($attributes[$field]);
-                }
-            }
+            $attributes = ContentFormatting::prepare($record->toArray(), $attributes, ContentFormatting::fields($collection));
             $record->fill($attributes + $this->collections->attributes($collection));
             $record->save();
             $this->activity($userId, ($id === null ? 'Menambahkan ' : 'Memperbarui ').$collection.': '.$record->title);
@@ -128,6 +119,7 @@ final class CmsEditor
         DB::transaction(function () use ($group, $values, $userId): void {
             abort_unless(CmsAccess::settings($this->actor($userId), $group), 403);
             $setting = SiteSetting::where('group', $group)->lockForUpdate()->first();
+            $values = ContentFormatting::prepare($setting?->values ?? [], $values, ContentFormatting::settingsFields($group));
             if ($setting === null) {
                 SiteSetting::create(['group' => $group, 'values' => $values]);
             } else {

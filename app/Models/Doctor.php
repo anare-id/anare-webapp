@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 final class Doctor extends Model
 {
     use \App\Models\Concerns\HasPublication;
+    use \App\Models\Concerns\HasContentFormats;
     use \App\Models\Concerns\HasSeo;
     use \App\Models\Concerns\HasImageAlts;
 

@@ -30,7 +30,14 @@ class WebsiteContent
 
     public function text(string $group, string $key): string
     {
-        return LocalizedContent::field($this->settings()[$group] ?? [], $key);
+        $record = $this->settings()[$group] ?? [];
+        $value = LocalizedContent::field($record, $key);
+        return ContentFormatting::format($record, ContentFormatting::localizedKey($record, $key)) === 'html' ? ContentFormatting::plain($value) : $value;
+    }
+
+    public function settingHtml(string $group, string $key): string
+    {
+        return ContentFormatting::html($this->settings()[$group] ?? [], $key);
     }
 
     public function localize(Model $record, array $fields): array
@@ -39,8 +46,20 @@ class WebsiteContent
         foreach (['seo_title', 'meta_description', 'image_alt', 'catalog_image_alt', 'comparison_before_alt', 'comparison_after_alt', 'home_image_alt', 'schedule_image_alt', 'mobile_image_alt'] as $field) {
             if (array_key_exists($field, $item)) $item[$field] = LocalizedContent::field($item, $field);
         }
+        $collection = match ($record->getTable()) {
+            'treatments' => $record->service,
+            'hero_slides' => 'hero-'.$record->section,
+            default => $record->getTable(),
+        };
         foreach ($fields as $field) {
-            $item[$field] = LocalizedContent::field($item, $field);
+            $key = ContentFormatting::localizedKey($item, $field);
+            $value = LocalizedContent::field($item, $field);
+            if (in_array($field, ContentFormatting::fields($collection), true)) {
+                $item[$field.'_html'] = ContentFormatting::html($item, $field);
+                $item[$field] = ContentFormatting::format($item, $key) === 'html' ? ContentFormatting::plain($value) : $value;
+            } else {
+                $item[$field] = $value;
+            }
         }
         return $item;
     }
@@ -68,7 +87,6 @@ class WebsiteContent
         $item['profile_image'] = $item['image'];
         $item['home_image'] = $item['home_image'] ?: $item['image'];
         $item['schedule_summary'] = $item['schedule'];
-        $item['expertise'] = preg_split('/\R/u', $item['expertise'], -1, PREG_SPLIT_NO_EMPTY) ?: [];
         return $item;
     }
 
@@ -99,6 +117,7 @@ class WebsiteContent
                 return [
                     'id' => (string) $review->id, 'rating' => (int) $review->rating,
                     'author' => $item['title'], 'text' => $item['description'], 'initials' => $initials,
+                    'text_html' => $item['description_html'],
                     'language' => app()->getLocale(), 'author_url' => $review->url ?: $reviewsUrl,
                     'review_url' => $review->url ?: $reviewsUrl,
                 ];

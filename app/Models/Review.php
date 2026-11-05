@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 final class Review extends Model
 {
     use \App\Models\Concerns\HasPublication;
+    use \App\Models\Concerns\HasContentFormats;
 
     protected $fillable = ['title', 'title_en', 'description', 'description_en', 'rating', 'url', 'status', 'sort_order'];
 

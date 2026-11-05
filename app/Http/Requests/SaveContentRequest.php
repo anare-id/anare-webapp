@@ -78,6 +78,7 @@ final class SaveContentRequest extends FormRequest
                 $rules[$field] = $this->position();
             }
             $rules['comparison_illustrative'] = ['sometimes', 'boolean'];
+            $rules['show_comparison'] = ['sometimes', 'boolean'];
             $rules['legacy'] = ['sometimes', 'boolean'];
         }
         if ($collection === 'doctors') {
@@ -116,6 +117,7 @@ final class SaveContentRequest extends FormRequest
         if (in_array($collection, ['services', 'reviews'], true) || str_starts_with($collection, 'hero-')) {
             $rules['url'] = ['sometimes', 'nullable', 'string', 'max:2048', new WebLink()];
         }
+        $rules += \App\Services\ContentFormatting::rules(\App\Services\ContentFormatting::fields($collection));
         return $rules;
     }
 

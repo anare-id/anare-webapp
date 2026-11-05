@@ -9,8 +9,8 @@
     <h1>{{ $article['title'] }}</h1>
     @if($article['date'])<time datetime="{{ $article['date'] }}">{{ \Carbon\Carbon::parse($article['date'])->locale(app()->getLocale())->translatedFormat('d F Y') }}</time>@endif
     @if($article['author'])<p>{{ $article['author'] }}</p>@endif
-    <p class="article-content">{{ $article['description'] }}</p>
-    <div class="article-content article-rich-content">{!! app(\App\Services\ArticleHtml::class)->render($article['body'], $article['body_format'] ?? 'text') !!}</div>
+    <div class="article-content rich-content">{!! $article['description_html'] !!}</div>
+    <div class="article-content article-rich-content rich-content">{!! $article['body_html'] !!}</div>
 </article>
 <section class="section muted center">
     <div class="container">

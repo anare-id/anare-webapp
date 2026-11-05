@@ -13,7 +13,7 @@
                 @if(($showSlideContent ?? true) && (!empty($slide['title']) || !empty($slide['description']) || !empty($slide['button'])))
                     <div class="hero-slide-content">
                         @if(!empty($slide['title']))<h2>{{ $slide['title'] }}</h2>@endif
-                        @if(!empty($slide['description']))<p class="home-hero-copy">{{ $slide['description'] }}</p>@endif
+                        @if(!empty($slide['description_html']))<div class="home-hero-copy rich-content">{!! $slide['description_html'] !!}</div>@endif
                         @if(!empty($slide['button']) && !empty($slide['url']))
                             <a class="home-book" href="{{ $slide['url'] }}">{{ $slide['button'] }}</a>
                         @endif

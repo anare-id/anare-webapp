@@ -23,6 +23,7 @@ class TreatmentController extends Controller
             'serviceName' => $this->website->text($this->catalog, 'name'),
             'heroTitle' => $this->website->text($this->catalog, 'title'),
             'heroDescription' => $this->website->text($this->catalog, 'description'),
+            'heroDescriptionHtml' => $this->website->settingHtml($this->catalog, 'description'),
             'heroSlides' => $this->website->heroes($this->catalog),
         ];
     }
@@ -87,14 +88,15 @@ class TreatmentController extends Controller
         $lastPage = max(1, (int) ceil($query->count() / max(1, (int) $this->website->setting($this->catalog, 'per_page', 6))));
         $conditions = [];
         foreach (['pre', 'post', 'downtime'] as $key) {
-            $conditions[__('site.treatment.conditions.'.$key.'.label')] = $treatment[$key];
+            $conditions[__('site.treatment.conditions.'.$key.'.label')] = $treatment[$key.'_html'];
         }
 
         return view('pages.treatments.detail', [
             ...$this->pageData(), 'treatment' => $treatment,
             'backUrl' => route($this->catalog, ['category' => $category, 'page' => min($page, $lastPage)]).'#treatments',
             'comparison' => [
-                'before' => \App\Support\OptimizedImages::path($record->comparison_before), 'after' => \App\Support\OptimizedImages::path($record->comparison_after),
+                'enabled' => $record->show_comparison,
+                'before' => \App\Support\OptimizedImages::path(trim((string) $record->comparison_before)), 'after' => \App\Support\OptimizedImages::path(trim((string) $record->comparison_after)),
                 'illustrative' => $record->comparison_illustrative, 'image_position' => $record->comparison_position,
             ],
             'conditions' => $conditions,

@@ -24,6 +24,13 @@ final class CmsRecordResource extends JsonResource
         if ($record instanceof Article) {
             $data['date'] = $record->date?->format('Y-m-d');
         }
+        $collection = $record instanceof Treatment ? $record->service : $record->getTable();
+        foreach (\App\Services\ContentFormatting::fields($collection) as $field) {
+            foreach ([$field, $field.'_en'] as $key) {
+                $value = (string) ($data[$key] ?? '');
+                $data['plain_fields'][$key] = \App\Services\ContentFormatting::format($data, $key) === 'html' ? \App\Services\ContentFormatting::plain($value) : $value;
+            }
+        }
         return $data;
     }
 }

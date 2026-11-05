@@ -17,7 +17,7 @@
                     <small>{{ $article['category_title'] }}</small>
                     @if($article['date'])<time datetime="{{ $article['date'] }}">{{ \Carbon\Carbon::parse($article['date'])->locale(app()->getLocale())->translatedFormat('d F Y') }}</time>@endif
                     <h3>{{ $article['title'] }}</h3>
-                    <p>{{ $article['description'] }}</p>
+                    <div class="rich-content">{!! $article['description_html'] !!}</div>
                     <a class="card-btn" href="{{ route('articles.detail', ['slug' => $article['slug']]) }}">{{ __('site.common.read_more') }} ›</a>
                 </div>
             </article>

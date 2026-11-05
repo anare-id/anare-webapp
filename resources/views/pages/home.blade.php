@@ -16,7 +16,7 @@
                     @if($service['image'])<img src="{{ asset($service['image']) }}" alt="{{ $service['image_alt'] ?? '' ?: $service['title'] }}" width="1672" height="941" loading="lazy">@endif
                     <div class="home-service-content" @if(!$service['image']) style="width: 100%; padding: 24px" @endif>
                         <h3>{{ $service['title'] }}</h3>
-                        <p>{{ $service['description'] }}</p>
+                        <div class="rich-content">{!! $service['description_html'] !!}</div>
                         @if($service['url'])<a class="home-dark-button" href="{{ $service['url'] }}">{{ __('site.common.detail') }} <span aria-hidden="true">❯</span></a>@endif
                     </div>
                 </article>
@@ -28,8 +28,8 @@
 <section class="home-doctor-feature" aria-labelledby="doctors-title">
     <div class="home-doctors-heading">
         <h2 id="doctors-title">{{ $website->text('home', 'doctors_title') }}</h2>
-        <p>{{ $website->text('home', 'doctors_description') }}</p>
-        <p class="home-doctors-invitation">{{ $website->text('home', 'doctors_invitation') }}</p>
+        <div class="rich-content">{!! $website->settingHtml('home', 'doctors_description') !!}</div>
+        <div class="home-doctors-invitation rich-content">{!! $website->settingHtml('home', 'doctors_invitation') !!}</div>
     </div>
     <div class="home-doctor-team" style="--featured-doctor-count: {{ max(1, min(6, count($featuredDoctors))) }}; --featured-doctor-mobile-count: {{ max(1, min(3, count($featuredDoctors))) }}; @if(!collect($featuredDoctors)->contains(fn ($doctor) => !empty($doctor['home_image']))) grid-auto-rows: auto; @endif" aria-label="{{ __('site.home.team') }}">
         @foreach($featuredDoctors as $doctor)
@@ -48,7 +48,7 @@
         <div>
             @if($article['date'])<time class="home-date" datetime="{{ $article['date'] }}">{{ \Carbon\Carbon::parse($article['date'])->locale(app()->getLocale())->translatedFormat('d F Y') }}</time>@endif
             <h2 id="article-title-{{ $article['id'] }}">{{ $article['title'] }}</h2>
-            <p>{{ $article['description'] }}</p>
+            <div class="rich-content">{!! $article['description_html'] !!}</div>
             <a class="home-dark-button" href="{{ route('articles.detail', ['slug' => $article['slug']]) }}">{{ __('site.common.read_more') }} <span aria-hidden="true">❯</span></a>
         </div>
     </div>
@@ -93,7 +93,7 @@
                 <div class="home-location-map"><iframe title="{{ __('site.home.map_title') }}" src="{{ $website->mapEmbedUrl() }}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div>
             </div>
             @endif
-            @if($website->setting('contact', 'maps'))<a class="home-location-address" href="{{ $website->setting('contact', 'maps') }}" target="_blank" rel="noopener noreferrer">{{ $website->text('contact', 'address') }}</a>@endif
+            <div class="home-location-address rich-content">{!! $website->settingHtml('contact', 'address') !!}</div>
         </div>
         <div class="home-contact-column home-reviews-column" data-google-reviews data-reviews-url="{{ route('google.reviews') }}" data-review-source="{{ $reviewFeed['source'] }}" data-loading-label="{{ __('site.reviews.loading') }}" data-selected-label="{{ __('site.reviews.selected') }}" data-saved-label="{{ __('site.reviews.saved') }}">
             <h2>{{ $website->text('home', 'reviews_title') }}</h2>

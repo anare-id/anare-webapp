@@ -27,7 +27,7 @@ final class SaveSettingsRequest extends FormRequest
                 foreach (['meta_description', 'meta_description_en'] as $field) $rules[$page.'_'.$field] = ['sometimes', 'nullable', 'string', 'max:1000'];
                 $rules[$page.'_is_indexable'] = ['sometimes', 'boolean'];
             }
-            return $rules;
+            return $rules + \App\Services\ContentFormatting::rules([]);
         }
         $text = ['sometimes', 'nullable', 'string', 'max:2000'];
         $rules = match ($group) {
@@ -55,6 +55,10 @@ final class SaveSettingsRequest extends FormRequest
             'theme' => array_fill_keys(array_keys(\App\Services\ThemePalette::defaults()), ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/D']),
             default => abort(404),
         };
+        foreach (\App\Services\ContentFormatting::settingsFields($group) as $field) {
+            foreach ([$field, $field.'_en'] as $key) $rules[$key] = ['sometimes', 'nullable', 'string', 'max:50000'];
+        }
+        $rules += \App\Services\ContentFormatting::rules(\App\Services\ContentFormatting::settingsFields($group));
         return $rules;
     }
 }

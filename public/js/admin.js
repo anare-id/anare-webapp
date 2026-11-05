@@ -75,6 +75,7 @@
     const status = value => `<span class="status-badge ${value === 'published' ? '' : 'draft'}">${value === 'published' ? 'Dipublikasikan' : 'Draft'}</span>`;
     const categoryLabel = (key, value) => state.categories[key]?.[value] || value || '—';
     const dateLabel = date => date && !Number.isNaN(new Date(date).valueOf()) ? new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(date)) : 'Data awal';
+    const plainField = (item, name) => item.plain_fields?.[name] ?? item[name] ?? '';
     let currentPage = 1;
     let homeTab = 'hero';
     let editorContext = null;
@@ -268,7 +269,7 @@
         const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
         currentPage = Math.min(currentPage, totalPages);
         const start = (currentPage - 1) * perPage;
-        $('#content-table-body').innerHTML = filtered.slice(start, start + perPage).map(item => `<tr><td><div class="table-item"><img class="table-thumb ${collection === 'doctors' ? 'doctor-thumb' : ''}" src="${escape(safeImage(item.image))}" alt="" loading="lazy"><span><strong class="table-title">${escape(item.title)}</strong><small class="table-slug">${collection === 'doctors' ? escape(item.specialty) : '/'+collection+'/'+escape(item.slug)}</small></span></div></td><td>${collection === 'doctors' ? `<div class="schedule-cell">${escape(item.schedule || 'Jadwal belum diisi')}</div>` : `<span class="table-category">${escape(categoryLabel(collection, item.category))}</span>`}</td><td>${status(item.status)}</td><td>${escape(dateLabel(item.updated_at))}</td><td>${rowActions(collection, item)}</td></tr>`).join('');
+        $('#content-table-body').innerHTML = filtered.slice(start, start + perPage).map(item => `<tr><td><div class="table-item"><img class="table-thumb ${collection === 'doctors' ? 'doctor-thumb' : ''}" src="${escape(safeImage(item.image))}" alt="" loading="lazy"><span><strong class="table-title">${escape(item.title)}</strong><small class="table-slug">${collection === 'doctors' ? escape(item.specialty) : '/'+collection+'/'+escape(item.slug)}</small></span></div></td><td>${collection === 'doctors' ? `<div class="schedule-cell">${escape(plainField(item, 'schedule') || 'Jadwal belum diisi')}</div>` : `<span class="table-category">${escape(categoryLabel(collection, item.category))}</span>`}</td><td>${status(item.status)}</td><td>${escape(dateLabel(item.updated_at))}</td><td>${rowActions(collection, item)}</td></tr>`).join('');
         $('#collection-empty').hidden = filtered.length !== 0;
         $('.table-scroll').hidden = filtered.length === 0;
         $('#table-range').textContent = filtered.length ? `Menampilkan ${start + 1}–${Math.min(start + perPage, filtered.length)} dari ${filtered.length} ${singleLabels[collection]}` : 'Tidak ada hasil';
@@ -283,7 +284,7 @@
     }
 
     function heroCards(key, slideLabels = true) {
-        return listFor(key).map((item, index) => `<article class="panel hero-card"><div class="hero-card-image"><img src="${escape(safeImage(item.image))}" alt="${escape(item.title)}" loading="lazy">${slideLabels ? `<span class="slide-label">SLIDE ${String(index + 1).padStart(2, '0')}</span>` : ''}${status(item.status)}</div><div class="hero-card-content"><h3>${escape(item.title)}</h3><p>${escape(item.description || 'Belum ada deskripsi. Tambahkan konten melalui editor.')}</p><div class="hero-card-actions">${rowActions(key, item)}</div></div></article>`).join('');
+        return listFor(key).map((item, index) => `<article class="panel hero-card"><div class="hero-card-image"><img src="${escape(safeImage(item.image))}" alt="${escape(item.title)}" loading="lazy">${slideLabels ? `<span class="slide-label">SLIDE ${String(index + 1).padStart(2, '0')}</span>` : ''}${status(item.status)}</div><div class="hero-card-content"><h3>${escape(item.title)}</h3><p>${escape(plainField(item, 'description') || 'Belum ada deskripsi.')}</p><div class="hero-card-actions">${rowActions(key, item)}</div></div></article>`).join('');
     }
 
     function renderHome() {
@@ -295,9 +296,13 @@
         } else if (homeTab === 'doctors') {
             target.innerHTML = canView('doctors') ? `<div class="section-intro"><div><h2>Dokter pilihan</h2><p>Profil dokter yang ditampilkan pada beranda.</p></div><a class="button button-white" href="/admin/dokter">Lihat dokter ${icon('arrow')}</a></div><div class="doctor-picker-grid">${listFor('doctors').map(item => `<article class="panel doctor-pick"><img src="${escape(safeImage(item.home_image || item.image))}" alt="" loading="lazy"><div><h3>${escape(item.title)}</h3>${status(item.status)}</div>${canChange('doctors', 'update', item) ? `<label class="switch-control"><input type="checkbox" data-feature-doctor="${escape(item.id)}" ${item.featured ? 'checked' : ''} aria-label="Tampilkan ${escape(item.title)} di beranda"></label>` : `<span class="quiet-label">${item.featured ? 'PILIHAN BERANDA' : 'TIDAK DITAMPILKAN'}</span>`}</article>`).join('')}</div><p class="section-hint">${icon('info')}Dokter berstatus dipublikasikan dan dipilih akan tampil pada beranda.</p>` : '';
         } else if (homeTab === 'reviews') {
-            target.innerHTML = `<div class="section-intro"><div><h2>Ulasan klien</h2><p>Kelola nama, penilaian, dan cerita pengalaman klien.</p></div><button type="button" class="button button-dark" data-create="reviews">${icon('plus')}Tambah ulasan</button></div><div class="review-cards">${state.reviews.map(item => `<article class="panel review-card"><span class="review-stars">${'★'.repeat(Math.min(5, Math.max(1, Number(item.rating) || 5)))}</span><p>${escape(item.description)}</p><div class="review-card-footer"><strong>${escape(item.title)}</strong>${rowActions('reviews', item)}</div></article>`).join('')}</div>`;
+            target.innerHTML = `<div class="section-intro"><div><h2>Ulasan klien</h2><p>Kelola nama, penilaian, dan cerita pengalaman klien.</p></div><button type="button" class="button button-dark" data-create="reviews">${icon('plus')}Tambah ulasan</button></div><div class="review-cards">${state.reviews.map(item => `<article class="panel review-card"><span class="review-stars">${'★'.repeat(Math.min(5, Math.max(1, Number(item.rating) || 5)))}</span><p>${escape(plainField(item, 'description'))}</p><div class="review-card-footer"><strong>${escape(item.title)}</strong>${rowActions('reviews', item)}</div></article>`).join('')}</div>`;
         } else {
             target.innerHTML = `<section class="panel settings-panel"><div class="panel-heading"><div><h2>Pengaturan section beranda</h2><p>Judul dan deskripsi yang membentuk halaman utama.</p></div></div>${settingsForm('home')}</section>`;
+        }
+        if (homeTab === 'sections') {
+            const form = $('[data-settings-form="home"]', target);
+            if (form) initializeRichEditors(form, state.settings.home, state.rich_settings_fields?.home || [], canSettings('home'));
         }
         applyAccessControls();
     }
@@ -317,7 +322,7 @@
     }
 
     function settingsFields(group) {
-        return `<div class="field-grid">${settingsSchema[group].map(([name, label, type = 'text']) => field(name, label, state.settings[group]?.[name], type, group === 'social', ['name', 'title', 'services_title'].includes(name) ? 'required' : '')).join('')}${group === 'contact' ? field('location_image_alt', 'Alt Text foto lokasi — Indonesia', state.settings.contact.location_image_alt) + field('location_image_alt_en', 'Alt Text location photo — English', state.settings.contact.location_image_alt_en) : ''}</div>`;
+        return `<div class="field-grid">${settingsSchema[group].map(([name, label, type = 'text']) => field(name, label, state.settings[group]?.[name], (state.rich_settings_fields?.[group] || []).includes(name.replace(/_en$/, '')) ? 'textarea' : type, group === 'social', ['name', 'title', 'services_title'].includes(name) ? 'required' : '')).join('')}${group === 'contact' ? field('location_image_alt', 'Alt Text foto lokasi — Indonesia', state.settings.contact.location_image_alt) + field('location_image_alt_en', 'Alt Text location photo — English', state.settings.contact.location_image_alt_en) : ''}</div>`;
     }
 
     function settingsForm(group) {
@@ -432,6 +437,10 @@
         $('#seo-settings').innerHTML = seoSettingsForm();
         const theme = $('[data-settings-form="theme"]');
         if (theme) updateThemePreview(theme);
+        for (const group of ['contact', 'social']) {
+            const form = $(`[data-settings-form="${group}"]`);
+            if (form) initializeRichEditors(form, state.settings[group], state.rich_settings_fields?.[group] || [], canSettings(group));
+        }
     }
 
     function render() {
@@ -492,18 +501,28 @@
     }
 
     const richHtml = quill => quill.getText().trim() || quill.root.querySelector('img') ? quill.getSemanticHTML() : '';
-    const articleEditors = [];
-    function initializeArticleEditors(item) {
-        articleEditors.length = 0;
-        for (const name of ['body', 'body_en']) {
-            const textarea = $(`[name="${name}"]`, editorForm);
+    const richEditors = new WeakMap();
+    function initializeRichEditors(root, item, fields, writable = true) {
+        const editors = [];
+        richEditors.set(root, editors);
+        for (const base of fields) for (const name of [base, `${base}_en`]) {
+            const textarea = $(`[name="${name}"]`, root);
+            if (!textarea) continue;
             const container = document.createElement('div');
             textarea.after(container);
+            container.className = base === 'body' ? 'rich-body-editor' : 'rich-compact-editor';
             textarea.hidden = true;
-            const quill = new Quill(container, { theme: 'snow', modules: { toolbar: [[{ header: [1, 2, 3, false] }], ['bold', 'italic'], [{ list: 'ordered' }, { list: 'bullet' }], ['link', 'image'], ['clean']] } });
-            if (item.body_format === 'html') quill.clipboard.dangerouslyPasteHTML(textarea.value);
+            const withImages = base === 'body';
+            const quill = new Quill(container, { theme: 'snow', readOnly: !writable, modules: { toolbar: writable ? [[{ header: [1, 2, 3, false] }], ['bold', 'italic', 'underline'], [{ list: 'ordered' }, { list: 'bullet' }], withImages ? ['link', 'image'] : ['link'], ['clean']] : false } });
+            const format = item.content_formats?.[name] || (base === 'body' ? item.body_format : 'text');
+            if (format === 'html') quill.clipboard.dangerouslyPasteHTML(textarea.value);
             else quill.setText(textarea.value);
-            quill.root.setAttribute('aria-label', name === 'body' ? 'Isi artikel Indonesia' : 'Article content English');
+            quill.root.setAttribute('aria-label', textarea.closest('.field').querySelector('span').textContent);
+            const label = textarea.closest('.field').querySelector('span');
+            label.id = `rich-label-${name}-${root.id || root.dataset.settingsForm}`;
+            container.previousElementSibling?.classList.contains('ql-toolbar') && container.previousElementSibling.setAttribute('aria-label', `Format ${label.textContent}`);
+            quill.root.setAttribute('aria-labelledby', label.id);
+            if (!writable) { editors.push({ name, quill }); continue; }
             quill.getModule('toolbar').addHandler('link', value => {
                 if (!value) return quill.format('link', false);
                 const url = window.prompt('URL tautan (https:// atau /skin/slug untuk internal link):');
@@ -513,7 +532,7 @@
                 if (range?.length) quill.format('link', url.trim(), 'user');
                 else quill.insertText(range?.index ?? quill.getLength() - 1, url.trim(), { link: url.trim() }, 'user');
             });
-            quill.getModule('toolbar').addHandler('image', () => {
+            if (withImages) quill.getModule('toolbar').addHandler('image', () => {
                 if (!can('media.upload')) return deny();
                 const input = document.createElement('input');
                 input.type = 'file'; input.accept = 'image/jpeg,image/png,image/webp,image/gif';
@@ -541,8 +560,17 @@
                 if (alt !== null) { event.target.alt = alt; textarea.value = richHtml(quill); }
             });
             quill.on('text-change', () => { textarea.value = richHtml(quill); });
-            articleEditors.push({ name, quill });
+            editors.push({ name, quill });
         }
+    }
+
+    function serializeRichEditors(form, fields) {
+        const formats = {};
+        for (const rich of richEditors.get(form) || []) {
+            fields[rich.name] = richHtml(rich.quill);
+            formats[rich.name] = 'html';
+        }
+        if (Object.keys(formats).length) fields.content_formats = formats;
     }
 
     function imageField(item, name = 'image', title = 'Foto konten') {
@@ -563,8 +591,8 @@
         const isHero = key.startsWith('hero:');
         let html = `<div class="editor-language-tabs" role="tablist" aria-label="Bahasa konten"><button class="active" type="button" role="tab" aria-selected="true" data-editor-language="id"><span class="language-flag">ID</span>Bahasa Indonesia</button><button type="button" role="tab" aria-selected="false" tabindex="-1" data-editor-language="en"><span class="language-flag">EN</span>English</button></div>`;
         if (['hero:skin', 'hero:shape'].includes(key)) html += '<p class="editor-hint">Banner katalog menampilkan foto dari slide ini. Judul slide digunakan sebagai alt foto; judul dan deskripsi utama banner diatur melalui Atur halaman agar tidak bertumpuk dengan teks slide.</p>';
-        html += `<div data-language-panel="id"><div class="field-grid">${field('title', key === 'doctors' ? 'Nama dokter *' : key === 'reviews' ? 'Nama klien *' : 'Judul / nama konten *', item.title, 'text', true, 'required')}${field('description', key === 'articles' ? 'Ringkasan artikel' : key === 'doctors' ? 'Biografi singkat' : key === 'reviews' ? 'Isi ulasan' : 'Deskripsi', item.description, 'textarea')}${key === 'articles' ? field('body', 'Isi artikel', item.body || item.description, 'textarea', true, 'rows="9"') : ''}${key === 'doctors' ? field('education', 'Pendidikan & pengalaman', item.education, 'textarea') + field('expertise', 'Keahlian (satu poin per baris)', item.expertise, 'textarea') : ''}</div></div>`;
-        html += `<div data-language-panel="en" hidden><div class="field-grid">${field('title_en', key === 'doctors' ? 'Doctor’s name' : key === 'reviews' ? 'Client’s name' : 'Title / content name', item.title_en, 'text', true)}${field('description_en', key === 'articles' ? 'Article summary' : 'Description', item.description_en, 'textarea')}${key === 'articles' ? field('body_en', 'Article content', item.body_en, 'textarea') : ''}${key === 'doctors' ? field('education_en', 'Education & experience', item.education_en, 'textarea') + field('expertise_en', 'Expertise (one item per line)', item.expertise_en, 'textarea') : ''}</div></div>`;
+        html += `<div data-language-panel="id"><div class="field-grid">${field('title', key === 'doctors' ? 'Nama dokter *' : key === 'reviews' ? 'Nama klien *' : 'Judul / nama konten *', item.title, 'text', true, 'required')}${field('description', key === 'articles' ? 'Ringkasan artikel' : key === 'doctors' ? 'Biografi singkat' : key === 'reviews' ? 'Isi ulasan' : 'Deskripsi', item.description, 'textarea')}${key === 'articles' ? field('body', 'Isi artikel', item.body || item.description, 'textarea', true, 'rows="9"') : ''}${key === 'doctors' ? field('education', 'Pendidikan & pengalaman', item.education, 'textarea') + field('expertise', 'Keahlian', item.expertise, 'textarea') : ''}</div></div>`;
+        html += `<div data-language-panel="en" hidden><div class="field-grid">${field('title_en', key === 'doctors' ? 'Doctor’s name' : key === 'reviews' ? 'Client’s name' : 'Title / content name', item.title_en, 'text', true)}${field('description_en', key === 'articles' ? 'Article summary' : 'Description', item.description_en, 'textarea')}${key === 'articles' ? field('body_en', 'Article content', item.body_en, 'textarea') : ''}${key === 'doctors' ? field('education_en', 'Education & experience', item.education_en, 'textarea') + field('expertise_en', 'Expertise', item.expertise_en, 'textarea') : ''}</div></div>`;
         html += `<div class="editor-section-title">Detail konten</div><div class="field-grid">${selectField('status', 'Status publikasi', item.status, can(`${moduleFor(key)}.publish`) ? { published: 'Dipublikasikan', draft: 'Draft' } : { draft: 'Draft' })}`;
         if (state.categories[key]) html += selectField('category', 'Kategori', item.category, state.categories[key]);
         if (['skin', 'shape', 'doctors', 'articles'].includes(key)) html += field('slug', 'Slug / alamat halaman *', item.slug, 'text', false, 'required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" title="Gunakan huruf kecil, angka, dan tanda hubung"');
@@ -586,7 +614,8 @@
         if (key === 'doctors') html += imageField(item, 'home_image', 'Foto dokter beranda') + imageField(item, 'schedule_image', 'Foto & jadwal praktik');
         if (isHero) html += imageField(item, 'mobile_image', 'Foto hero mobile');
         if (['skin', 'shape'].includes(key)) {
-            html += imageField(item, 'catalog_image', 'Foto katalog') + imageField(item, 'comparison_before', 'Foto sebelum treatment') + imageField(item, 'comparison_after', 'Foto sesudah treatment');
+            html += imageField(item, 'catalog_image', 'Foto katalog');
+            html += `<div class="editor-section-title">Before / After</div><label class="field comparison-toggle"><span>Tampilkan before / after</span><span class="switch-control"><input type="checkbox" name="show_comparison" ${item.show_comparison ? 'checked' : ''} aria-controls="comparison-fields"></span></label><div id="comparison-fields" ${item.show_comparison ? '' : 'hidden'}>${imageField(item, 'comparison_before', 'Foto sebelum treatment')}${imageField(item, 'comparison_after', 'Foto sesudah treatment')}</div>`;
             html += `<div class="editor-section-title">Informasi detail treatment</div><div class="field-grid">${['pre', 'post', 'downtime'].map(name => field(name, `${{ pre: 'Pre-condition', post: 'Post-condition', downtime: 'Downtime' }[name]} — Indonesia`, item[name], 'textarea') + field(`${name}_en`, `${{ pre: 'Pre-condition', post: 'Post-condition', downtime: 'Downtime' }[name]} — English`, item[`${name}_en`], 'textarea')).join('')}${field('comparison_position', 'Posisi foto perbandingan', item.comparison_position || 'center')}<label class="field full"><span>Foto perbandingan ilustratif</span><span class="switch-control"><input type="checkbox" name="comparison_illustrative" ${item.comparison_illustrative ? 'checked' : ''}></span></label></div>`;
         }
         html += '<p class="editor-hint">Konten dipublikasikan akan tampil di website setelah disimpan. Gunakan status Draft untuk menyimpannya tanpa ditampilkan.</p><div class="form-error editor-error" role="alert" hidden></div>';
@@ -596,7 +625,7 @@
             const imageArea = $(`[data-image-field="${name}"]`, editorForm);
             imageArea?.insertAdjacentHTML('afterend', `<div class="field-grid">${field(`${name}_alt`, `Alt Text ${name.replaceAll('_', ' ')} — Indonesia`, item[`${name}_alt`])}${field(`${name}_alt_en`, `Alt Text ${name.replaceAll('_', ' ')} — English`, item[`${name}_alt_en`])}</div>`);
         }
-        if (key === 'articles') initializeArticleEditors(item);
+        initializeRichEditors(editorForm, item, state.rich_fields?.[key] || state.rich_fields?.[key.replace(':', '-')] || []);
         openDialog(editor);
     }
 
@@ -635,9 +664,9 @@
         event.preventDefault();
         if (!editorContext || mutationPending || uploadsPending || !editorForm.reportValidity()) return;
         const { key, id } = editorContext;
-        if (key === 'articles') for (const rich of articleEditors) $(`[name="${rich.name}"]`, editorForm).value = richHtml(rich.quill);
         const fields = Object.fromEntries(new FormData(editorForm));
         for (const name in fields) if (typeof fields[name] === 'string') fields[name] = fields[name].trim();
+        serializeRichEditors(editorForm, fields);
         $$('input[type="checkbox"][name]', editorForm).forEach(input => fields[input.name] = input.checked);
         if ('is_indexable' in fields) fields.is_indexable = fields.is_indexable === 'true';
         let path;
@@ -657,6 +686,7 @@
         $('#editor-title').textContent = group === 'home' ? 'Pengaturan beranda' : `Pengaturan ${labels[group] || group}`;
         $('#editor-eyebrow').textContent = 'WEBSITE SETTINGS';
         $('#editor-body').innerHTML = `${settingsFields(group)}${group === 'contact' ? imageField(state.settings.contact, 'location_image', 'Foto klinik pada lokasi') : ''}<p class="editor-hint">Perubahan diterapkan pada website setelah disimpan.</p><div class="form-error editor-error" role="alert" hidden></div>`;
+        initializeRichEditors(editorForm, state.settings[group], state.rich_settings_fields?.[group] || []);
         openDialog(editor);
     }
 
@@ -673,8 +703,9 @@
 
     function showPreview(key, id) {
         if (!canView(key)) return deny();
-        const item = listFor(key).find(item => item.id === id);
-        if (!item) return;
+        const original = listFor(key).find(item => item.id === id);
+        if (!original) return;
+        const item = { ...original, ...original.plain_fields };
         $('#preview-title').textContent = labels[key] || 'Pratinjau konten';
         const details = [['schedule', 'JADWAL PRAKTIK'], ['education', 'PENDIDIKAN'], ['expertise', 'KEAHLIAN'], ['pre', 'PRE-CONDITION'], ['post', 'POST-CONDITION'], ['downtime', 'DOWNTIME']].filter(([name]) => item[name]).map(([name, label]) => `<h4>${label}</h4><p>${escape(item[name])}</p>`).join('');
         const image = item.schedule_image && key === 'doctors' ? item.schedule_image : item.image;
@@ -714,6 +745,7 @@
     }
 
     editor.addEventListener('change', async event => {
+        if (event.target.name === 'show_comparison') $('#comparison-fields', editor).hidden = !event.target.checked;
         const input = event.target.closest('[data-image-upload]');
         if (!input?.files.length) return;
         if (!can('media.upload')) { input.value = ''; return deny(); }
@@ -848,6 +880,7 @@
         if (!canSettings(form.dataset.settingsForm)) return deny();
         if (mutationPending || uploadsPending || !form.reportValidity()) return;
         const fields = Object.fromEntries(new FormData(form));
+        serializeRichEditors(form, fields);
         if (form.dataset.settingsForm === 'seo') for (const name of Object.keys(fields)) if (name.endsWith('_is_indexable')) fields[name] = fields[name] === 'true';
         mutate(`/admin/settings/${encodeURIComponent(form.dataset.settingsForm)}`, 'PUT', fields, 'Pengaturan berhasil disimpan.', form);
     });

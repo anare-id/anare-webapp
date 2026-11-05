@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 final class HeroSlide extends Model
 {
     use \App\Models\Concerns\HasPublication;
+    use \App\Models\Concerns\HasContentFormats;
     use \App\Models\Concerns\HasImageAlts;
 
     protected $fillable = ['section', 'title', 'title_en', 'description', 'description_en', 'image', 'mobile_image', 'position', 'mobile_position', 'button', 'button_en', 'url', 'team', 'fit', 'background', 'status', 'sort_order'];

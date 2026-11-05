@@ -14,7 +14,7 @@ final class ArticleHtml
     {
         $config = HTMLPurifier_Config::createDefault();
         $config->set('Cache.DefinitionImpl', null);
-        $config->set('HTML.Allowed', 'p,br,h1,h2,h3,strong,b,em,i,u,ul,ol,li,a[href|title],img[src|alt|width|height],blockquote');
+        $config->set('HTML.Allowed', 'p,br,h1,h2,h3,strong,b,em,i,u,s,ul,ol,li,a[href|title],img[src|alt|width|height],blockquote');
         $config->set('URI.AllowedSchemes', ['http' => true, 'https' => true, 'mailto' => true, 'tel' => true]);
         $clean = (new HTMLPurifier($config))->purify($html);
         $doc = new DOMDocument();

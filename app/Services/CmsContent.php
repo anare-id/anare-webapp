@@ -69,6 +69,12 @@ final class CmsContent
             'roles' => $user->getRoleNames()->values()->all(),
         ];
         $state['image_urls'] = \App\Support\OptimizedImages::manifest();
+        foreach (['skin', 'shape', 'doctors', 'articles', 'services', 'reviews', 'hero-home', 'hero-skin', 'hero-shape', 'hero-doctors'] as $collection) {
+            $state['rich_fields'][$collection] = ContentFormatting::fields($collection);
+        }
+        foreach (['home', 'skin', 'shape', 'doctors', 'contact', 'social', 'theme', 'seo'] as $group) {
+            $state['rich_settings_fields'][$group] = ContentFormatting::settingsFields($group);
+        }
         return $state;
     }
 

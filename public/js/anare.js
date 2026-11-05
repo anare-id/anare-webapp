@@ -421,7 +421,7 @@ if (doctorModals.length) {
     });
 }
 
-// Google review text is server-rendered and escaped in the shared Blade partial.
+// Review content is server-rendered, with CMS rich text sanitized in Blade helpers.
 // Refresh once when the section approaches the viewport; failures retain it.
 document.querySelectorAll('[data-google-reviews]').forEach(section => {
     const content = section.querySelector('[data-google-reviews-content]');

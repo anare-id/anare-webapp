@@ -12,12 +12,12 @@
                     <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 6v6l4 2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                     {{ $treatment['duration'] }}
                 </span>
-            <p>{{ $treatment['description'] }}</p>
+            <div class="rich-content">{!! $treatment['description_html'] !!}</div>
         </div>
     </div>
 </section>
 
-@if($comparison['before'] && $comparison['after'])
+@if($comparison['enabled'] && $comparison['before'] && $comparison['after'])
 <section class="skin-comparison-section" aria-labelledby="comparison-title">
     <div class="container">
         <h2 id="comparison-title">{{ __('site.treatment.comparison') }}</h2>
@@ -45,7 +45,7 @@
                     <span>{{ $label }}</span>
                     <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="m5 8 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </summary>
-                <p>{{ $content }}</p>
+                <div class="treatment-condition-content rich-content">{!! $content !!}</div>
             </details>
         @endforeach
     </div>

@@ -7,7 +7,7 @@
                 <img src="{{ asset('images/logo-putih.png') }}" alt="{{ $website->text('contact', 'name') }}" width="1254" height="1254" loading="lazy">
             @endif
         </a>
-        <p class="footer-address">{{ $website->text('contact', 'address') }}</p>
+        <div class="footer-address rich-content">{!! $website->settingHtml('contact', 'address') !!}</div>
         <small class="footer-copyright">{{ __('site.copyright') }} © {{ date('Y') }} {{ $website->text('contact', 'name') }}. {{ __('site.footer.rights') }}</small>
     </div>
     <div>
