@@ -15,7 +15,7 @@ final class Treatment extends Model
     use \App\Models\Concerns\HasImageAlts;
     use HasContentFormats;
 
-    protected $fillable = ['service', 'category_id', 'slug', 'title', 'title_en', 'description', 'description_en', 'image', 'catalog_image', 'catalog_image_position', 'image_position', 'subtitle', 'subtitle_en', 'duration', 'duration_en', 'pre', 'pre_en', 'post', 'post_en', 'downtime', 'downtime_en', 'status', 'sort_order', 'show_comparison', 'comparison_before', 'comparison_after', 'comparison_position', 'comparison_illustrative', 'legacy'];
+    protected $fillable = ['service', 'category_id', 'slug', 'title', 'title_en', 'description', 'description_en', 'image', 'catalog_image', 'catalog_image_position', 'image_position', 'subtitle', 'subtitle_en', 'duration', 'duration_en', 'pre', 'pre_en', 'post', 'post_en', 'downtime', 'downtime_en', 'status', 'sort_order', 'show_comparison', 'comparison_before', 'comparison_after', 'comparison_before_2', 'comparison_after_2', 'comparison_position', 'comparison_illustrative', 'legacy'];
 
     protected $attributes = ['show_comparison' => false];
 

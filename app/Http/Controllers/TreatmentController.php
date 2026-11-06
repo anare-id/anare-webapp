@@ -96,6 +96,7 @@ class TreatmentController extends Controller
             'backUrl' => route($this->catalog, ['category' => $category, 'page' => min($page, $lastPage)]).'#treatments',
             'comparison' => [
                 'enabled' => $record->show_comparison,
+                'before_2' => \App\Support\OptimizedImages::path(trim((string) $record->comparison_before_2)), 'after_2' => \App\Support\OptimizedImages::path(trim((string) $record->comparison_after_2)),
                 'before' => \App\Support\OptimizedImages::path(trim((string) $record->comparison_before)), 'after' => \App\Support\OptimizedImages::path(trim((string) $record->comparison_after)),
                 'illustrative' => $record->comparison_illustrative, 'image_position' => $record->comparison_position,
             ],

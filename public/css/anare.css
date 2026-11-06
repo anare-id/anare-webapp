@@ -379,6 +379,12 @@ body:has(.anare-home-hero) .home-footer { width: min(1120px, 77.777778%); }
 .skin-comparison-section { padding-block: 56px; background: var(--treatment-comparison); }
 .skin-comparison-section h2 { margin: 0 0 32px; text-align: center; }
 .skin-comparison-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; max-width: 800px; margin-inline: auto; }
+.skin-comparison-pairs { display: flex; flex-wrap: wrap; justify-content: center; gap: 96px; }
+.skin-comparison-pairs > .skin-comparison-grid { flex: 1 1 400px; min-width: 0; width: 100%; }
+@media (max-width: 800px) {
+    .skin-comparison-pairs { flex-direction: column; }
+    .skin-comparison-pairs > .skin-comparison-grid { flex: none; }
+}
 .skin-comparison-grid figure { min-width: 0; margin: 0; overflow: hidden; border: 1px solid var(--treatment-border); border-radius: 6px; background: #fff; }
 .skin-comparison-grid img { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; object-position: center 40%; }
 .skin-comparison-grid figcaption { padding: 12px; background: var(--treatment-comparison-label); color: #fff; font-size: 15px; line-height: 1.4; text-align: center; letter-spacing: 2px; }

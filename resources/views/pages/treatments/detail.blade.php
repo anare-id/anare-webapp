@@ -17,21 +17,24 @@
     </div>
 </section>
 
-@if($comparison['enabled'] && $comparison['before'] && $comparison['after'])
+@if($comparison['enabled'] && (($comparison['before'] && $comparison['after']) || ($comparison['before_2'] && $comparison['after_2'])))
 <section class="skin-comparison-section" aria-labelledby="comparison-title">
     <div class="container">
         <h2 id="comparison-title">{{ __('site.treatment.comparison') }}</h2>
+        <div class="skin-comparison-pairs">
+        @foreach(['', '_2'] as $suffix)
+        @if($comparison['before'.$suffix] && $comparison['after'.$suffix])
         <div class="skin-comparison-grid">
-            @foreach(['before' => __('site.treatment.before'), 'after' => __('site.treatment.after')] as $key => $label)
+            @foreach(['before'.$suffix => __('site.treatment.before'), 'after'.$suffix => __('site.treatment.after')] as $key => $label)
                 <figure>
                     <img src="{{ asset($comparison[$key]) }}" alt="{{ $treatment['comparison_'.$key.'_alt'] ?? '' ?: $label }} — {{ !empty($comparison['illustrative']) ? __('site.treatment.illustration_alt') : $treatment['name'] }}" style="object-position: {{ $comparison['image_position'] ?: 'center 40%' }}" width="4000" height="6000" loading="lazy">
                     <figcaption>{{ $label }}</figcaption>
                 </figure>
             @endforeach
         </div>
-        @if(!empty($comparison['illustrative']))
-            <p class="skin-comparison-note">{{ __('site.treatment.illustration') }}</p>
         @endif
+        @endforeach
+        </div>
     </div>
 </section>
 @endif

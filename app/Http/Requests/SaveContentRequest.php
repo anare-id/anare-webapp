@@ -43,7 +43,7 @@ final class SaveContentRequest extends FormRequest
             'status' => ['sometimes', 'required', Rule::in(['draft', 'published'])],
             'sort_order' => ['sometimes', 'integer', 'min:0', 'max:1000000'],
         ];
-        foreach (['image', 'catalog_image', 'comparison_before', 'comparison_after', 'home_image', 'schedule_image', 'mobile_image'] as $field) {
+        foreach (['image', 'catalog_image', 'comparison_before', 'comparison_after', 'comparison_before_2', 'comparison_after_2', 'home_image', 'schedule_image', 'mobile_image'] as $field) {
             if (in_array($field.'_alt', $model->getFillable(), true)) $this->translated($rules, $field.'_alt', 500);
         }
         if (in_array($collection, ['skin', 'shape', 'doctors', 'articles'], true)) {
@@ -71,7 +71,7 @@ final class SaveContentRequest extends FormRequest
             foreach (['pre', 'post', 'downtime'] as $field) {
                 $this->translated($rules, $field, 50000);
             }
-            foreach (['catalog_image', 'comparison_before', 'comparison_after'] as $field) {
+            foreach (['catalog_image', 'comparison_before', 'comparison_after', 'comparison_before_2', 'comparison_after_2'] as $field) {
                 $rules[$field] = ['sometimes', 'nullable', 'string', 'max:1024', new LocalImage()];
             }
             foreach (['image_position', 'catalog_image_position', 'comparison_position'] as $field) {

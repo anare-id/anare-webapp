@@ -21,7 +21,7 @@ final class OptimizedImages
 
     public static function record(array $record): array
     {
-        foreach (['image', 'catalog_image', 'home_image', 'home_source', 'schedule_image', 'mobile_image', 'comparison_before', 'comparison_after'] as $field) {
+        foreach (['image', 'catalog_image', 'home_image', 'home_source', 'schedule_image', 'mobile_image', 'comparison_before', 'comparison_after', 'comparison_before_2', 'comparison_after_2'] as $field) {
             if (isset($record[$field])) {
                 $record[$field] = self::path($record[$field]);
             }

@@ -82,6 +82,34 @@ final class TreatmentComparisonTest extends TestCase
         $this->assertFalse($this->treatment()->fresh()->show_comparison);
     }
 
+    public function test_second_pair_requires_both_photos_and_respects_visibility(): void
+    {
+        $treatment = $this->treatment([
+            'show_comparison' => true,
+            'comparison_before_2' => '/images/second-before.jpg',
+            'comparison_after_2' => '/images/second-after.jpg',
+            'comparison_before_2_alt' => 'Second result before treatment',
+        ]);
+
+        $this->get(route('skin.detail', $treatment->slug))->assertOk()
+            ->assertSee('comparison-before-test.jpg')
+            ->assertSee('second-before.jpg')->assertSee('second-after.jpg')
+            ->assertSee('Second result before treatment');
+
+        $treatment->update(['comparison_after_2' => null]);
+        $this->get(route('skin.detail', $treatment->slug))->assertOk()
+            ->assertSee('comparison-before-test.jpg')->assertDontSee('second-before.jpg');
+
+        $treatment->update(['comparison_after_2' => '/images/second-after.jpg', 'comparison_before' => null]);
+        $this->get(route('skin.detail', $treatment->slug))->assertOk()
+            ->assertSee('second-before.jpg')->assertSee('second-after.jpg')
+            ->assertDontSee('comparison-after-test.jpg');
+
+        $treatment->update(['show_comparison' => false]);
+        $this->get(route('skin.detail', $treatment->slug))->assertOk()
+            ->assertDontSee('second-before.jpg')->assertDontSee('second-after.jpg');
+    }
+
     private function treatment(array $attributes = []): Treatment
     {
         $category = Category::firstOrCreate(
