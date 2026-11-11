@@ -93,7 +93,7 @@
                 <div class="home-location-map"><iframe title="{{ __('site.home.map_title') }}" src="{{ $website->mapEmbedUrl() }}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div>
             </div>
             @endif
-            <div class="home-location-address rich-content">{!! $website->settingHtml('contact', 'address') !!}</div>
+            @if($website->setting('contact', 'maps'))<a class="home-location-address" href="{{ $website->setting('contact', 'maps') }}" target="_blank" rel="noopener noreferrer"><div class="rich-content">{!! $website->settingHtml('contact', 'address') !!}</div></a>@else<div class="home-location-address"><div class="rich-content">{!! $website->settingHtml('contact', 'address') !!}</div></div>@endif
         </div>
         <div class="home-contact-column home-reviews-column" data-google-reviews data-reviews-url="{{ route('google.reviews') }}" data-review-source="{{ $reviewFeed['source'] }}" data-loading-label="{{ __('site.reviews.loading') }}" data-selected-label="{{ __('site.reviews.selected') }}" data-saved-label="{{ __('site.reviews.saved') }}">
             <h2>{{ $website->text('home', 'reviews_title') }}</h2>
