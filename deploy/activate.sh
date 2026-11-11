@@ -5,6 +5,8 @@ INBOX="${ANARE_INBOX:-/home/anaj8418/.deploy-anare}"
 ROOT="${ANARE_ROOT:-/home/anaj8418/anare-dev}"
 PHP="${ANARE_PHP:-/usr/local/bin/ea-php84}"
 PUBLIC="${ANARE_PUBLIC:-/home/anaj8418/public_html/anare-dev/current/public}"
+HEALTH_URL="${ANARE_HEALTH_URL:-http://dev.anare.co.id/up}"
+HEALTH_RESOLVE="${ANARE_HEALTH_RESOLVE:-dev.anare.co.id:80:203.175.8.76}"
 mkdir -p "$ROOT/releases" "$ROOT/shared/storage/app/public" "$ROOT/shared/storage/framework/"{cache/data,sessions,views} "$ROOT/shared/storage/logs"
 chmod 0711 "$ROOT" "$ROOT/shared" "$ROOT/shared/storage" "$ROOT/shared/storage/app"
 chmod 0755 "$ROOT/releases" "$ROOT/shared/storage/app/public"
@@ -49,11 +51,11 @@ PREVIOUS="$(readlink "$ROOT/current" || true)"
 if [[ -d "$ROOT/current" && ! -L "$ROOT/current" ]]; then rmdir "$ROOT/current/public"; rmdir "$ROOT/current"; fi
 ln -s "$RELEASE" "$ROOT/current.next"
 mv -Tf "$ROOT/current.next" "$ROOT/current"
-if [[ ! -L "$PUBLIC" ]]; then
+if [[ -e "$PUBLIC" && ! -L "$PUBLIC" ]]; then
     mv "$PUBLIC" "$ROOT/public-before-laravel-$(date +%Y%m%d%H%M%S)"
-    ln -s "$ROOT/current/public" "$PUBLIC"
 fi
-if ! curl --fail --silent --show-error --max-time 30 --resolve dev.anare.co.id:80:203.175.8.76 http://dev.anare.co.id/up >/dev/null; then
+if [[ ! -L "$PUBLIC" ]]; then ln -s "$ROOT/current/public" "$PUBLIC"; fi
+if ! curl --fail --silent --show-error --max-time 30 --resolve "$HEALTH_RESOLVE" "$HEALTH_URL" >/dev/null; then
     if [[ -n "$PREVIOUS" ]]; then ln -s "$PREVIOUS" "$ROOT/current.rollback"; mv -Tf "$ROOT/current.rollback" "$ROOT/current"; fi
     echo "Health check failed; previous code restored. Database migrations are not automatically reversed."
     exit 1

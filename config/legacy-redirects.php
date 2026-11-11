@@ -1,0 +1,37 @@
+<?php
+
+// Former WordPress URLs from https://anare.co.id/wp-sitemap.xml (captured before the Laravel cutover).
+// Keys are request paths without slashes; `*` matches one path segment.
+return [
+    'anare-hifu' => '/articles',
+    'kebiasaan-sehari-hari-yang-memperlambat-proses-penuaan-wajib-dicoba' => '/articles',
+    'endolipo-2' => '/articles/mengenal-endolipo-anare-shape',
+    'area-tubuh-yang-bisa-ditangani-dengan-endolipo' => '/articles/mengenal-endolipo-anare-shape',
+    'exosome-dan-skin-aging' => '/articles',
+    'skin-photoaging-dan-sunscreen' => '/articles',
+    'anare-clinic' => '/skin',
+    'anare-shape' => '/shape',
+    'skincare' => '/skin',
+    'our-doctors' => '/doctors',
+    'acne' => '/skin?category=acne',
+    'acne-2' => '/skin?category=acne',
+    'endolipo' => '/shape?category=endolipo',
+    'fat-graft' => '/shape',
+    'scar' => '/skin?category=scar',
+    'hyperpigmentation' => '/skin?category=hyperpigmentation',
+    'skin-quality' => '/skin?category=dull-skin',
+    'hair-treatment' => '/skin?category=hair-treatment',
+    'botox-filler' => '/skin?category=aging-shaping',
+    'skin-tightening' => '/shape?category=tightening',
+    'surgery' => '/shape',
+    'dry-skin' => '/skin?category=dry-skin',
+    'normal-skin' => '/skin',
+    'oily-skin' => '/skin?category=large-pores',
+    'category/anareshape' => '/shape',
+    'category/anare-clinic/skin-tightening' => '/shape?category=tightening',
+    'tag/*' => '/articles',
+    'author/*' => '/articles',
+    'feed' => '/articles',
+    'wp-sitemap.xml' => '/sitemap.xml',
+    'wp-sitemap-*.xml' => '/sitemap.xml',
+];

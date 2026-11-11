@@ -1,21 +1,28 @@
-name: Deploy Laravel development site
+name: Deploy Laravel site
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [development, production]
+        default: development
 
 permissions:
   contents: read
 
 concurrency:
-  group: anare-development-deployment
+  group: anare-${{ github.event_name == 'push' && 'development' || inputs.environment }}-deployment
   cancel-in-progress: false
 
 jobs:
   deploy:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment: development
+    environment: ${{ github.event_name == 'push' && 'development' || inputs.environment }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -59,11 +66,13 @@ jobs:
       - name: Wait for hosting activation
         env:
           RELEASE_SHA: ${{ github.sha }}
+          SITE_URL: ${{ vars.SITE_URL }}
         run: |
+          test -n "$SITE_URL"
           for attempt in $(seq 1 60); do
-            DEPLOYED="$(curl --silent --fail --max-time 15 "https://dev.anare.co.id/deployment.json?run=$GITHUB_RUN_ID" || true)"
+            DEPLOYED="$(curl --silent --fail --max-time 15 "$SITE_URL/deployment.json?run=$GITHUB_RUN_ID" || true)"
             if printf '%s' "$DEPLOYED" | jq -e --arg sha "$RELEASE_SHA" '.sha == $sha' >/dev/null 2>&1; then
-              curl --fail --show-error --silent https://dev.anare.co.id/up
+              curl --fail --show-error --silent "$SITE_URL/up"
               exit 0
             fi
             sleep 10

@@ -2,6 +2,8 @@
 set -Eeuo pipefail
 umask 027
 ROOT="${ANARE_ROOT:-/home/anaj8418/anare-dev}"
+HEALTH_URL="${ANARE_HEALTH_URL:-http://dev.anare.co.id/up}"
+HEALTH_RESOLVE="${ANARE_HEALTH_RESOLVE:-dev.anare.co.id:80:203.175.8.76}"
 SHA="${1:-}"
 [[ "$SHA" =~ ^[a-f0-9]{40}$ ]] || { echo 'Usage: rollback.sh <40-character deployed commit>'; exit 1; }
 TARGET="$ROOT/releases/$SHA"
@@ -11,7 +13,7 @@ flock -n 9 || { echo 'Deployment already in progress'; exit 1; }
 PREVIOUS="$(readlink "$ROOT/current")"
 ln -s "$TARGET" "$ROOT/current.rollback"
 mv -Tf "$ROOT/current.rollback" "$ROOT/current"
-if ! curl --fail --silent --show-error --max-time 30 --resolve dev.anare.co.id:80:203.175.8.76 http://dev.anare.co.id/up >/dev/null; then
+if ! curl --fail --silent --show-error --max-time 30 --resolve "$HEALTH_RESOLVE" "$HEALTH_URL" >/dev/null; then
     ln -s "$PREVIOUS" "$ROOT/current.restore"
     mv -Tf "$ROOT/current.restore" "$ROOT/current"
     echo 'Rollback target failed health check; original pointer restored.'

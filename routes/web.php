@@ -60,3 +60,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->where('section', 'beranda|skin|shape|dokter|artikel|pengaturan')->name('section');
     });
 });
+
+Route::get('/{legacy}', \App\Http\Controllers\LegacyRedirectController::class)
+    ->where('legacy', \App\Http\Controllers\LegacyRedirectController::pattern());
