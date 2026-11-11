@@ -1,14 +1,14 @@
-# Rumahweb development deployment
+# Rumahweb deployment
 
-Target: `https://dev.anare.co.id`. Main domain remains WordPress until a separate approved cutover.
+Development: `https://dev.anare.co.id`. Production: `https://anare.co.id` (Laravel since the 11 November 2026 cutover; former WordPress is archived, not deleted).
 
 ## Automatic updates
 
-Push approved changes to `main` in `anare-id/anare-webapp`. GitHub Actions `.github/workflows/deploy-dev.yml` runs tests, installs production dependencies, builds a release archive, and uploads through certificate-verified FTPS. The `development` GitHub environment holds `FTP_HOST`, `FTP_USER`, and `FTP_PASSWORD`. No hosting password, `.env`, database dump, or application password is committed.
+Push approved changes to `main` in `anare-id/anare-webapp`. GitHub Actions `.github/workflows/deploy.yml` deploys every push to the `development` environment. Production deploys only when started manually: **Actions → Deploy Laravel site → Run workflow → environment `production`** (branch `main` only; the GitHub `production` environment is restricted to `main`). The workflow runs tests, installs production dependencies, builds a release archive, and uploads through certificate-verified FTPS (`elbrus.iixcp.rumahweb.net`). Each GitHub environment holds its own `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` secrets and `SITE_URL` variable. No hosting password, `.env`, database dump, or application password is committed.
 
-The FTP account is restricted to `/home/anaj8418/.deploy-anare`. A private cron job runs `activate.sh` once per minute. It verifies SHA-256, prepares a new release, links persistent environment/storage, runs forward migrations, caches Laravel, and atomically changes the release pointer. GitHub waits until `deployment.json` reports the expected commit and `/up` is healthy. Failed activation must be inspected in the private deployment log; a green upload is not treated as successful deployment.
+Development: FTP account `githubdeploy@anare.co.id` is restricted to `/home/anaj8418/.deploy-anare`; its cron runs `activate.sh` from that inbox once per minute. The activator verifies SHA-256, prepares a new release, links persistent environment/storage, runs forward migrations, caches Laravel, and atomically changes the release pointer. GitHub waits until `deployment.json` reports the expected commit and `/up` is healthy. Failed activation must be inspected in the private deployment log; a green upload is not treated as successful deployment.
 
-Paths:
+Development paths:
 
 - Releases: `/home/anaj8418/anare-dev/releases/<commit>`.
 - Current code: `/home/anaj8418/anare-dev/current` symlink.
@@ -17,7 +17,7 @@ Paths:
 - Domain webroot: `/home/anaj8418/public_html/anare-dev/current/public`, symlink to current public directory. Hosting restricts document roots to `public_html`; application source remains outside it. Parent staging `.htaccess` denies access via the main-domain path.
 - Activation log: `/home/anaj8418/anare-dev/deploy.log`.
 
-Hosting specifics: cron runs Bash despite interactive SSH being disabled. PHP `exec`, `proc_open`, and `symlink` are disabled, so the shell activator creates storage/release links. Bash process substitution is unavailable in the jailed environment; the script avoids `/dev/fd`. Archive extraction obeys a restrictive umask, so the activator explicitly restores public directory/file traversal/read modes. `deploy/staging-parent.htaccess` overrides an inherited WordPress PHP 7.4 handler with PHP 8.4 for staging only; the main WordPress `.htaccess` is unchanged.
+Hosting specifics: cron runs Bash despite interactive SSH being disabled. PHP `exec`, `proc_open`, and `symlink` are disabled, so the shell activator creates storage/release links. Bash process substitution is unavailable in the jailed environment; the script avoids `/dev/fd`. Archive extraction obeys a restrictive umask, so the activator explicitly restores public directory/file traversal/read modes. `deploy/staging-parent.htaccess` sets PHP 8.4 for the staging tree and denies it through the main-domain path.
 
 Only reviewed trusted code may be pushed to the deploy branch. An action that can upload PHP into the release inbox can execute application code as the hosting user. Do not run deployment secrets on pull-request workflows. FTPS inbox credentials do not have general hosting-directory access.
 
@@ -47,4 +47,21 @@ Code rollback was exercised on hosting: commit `94cd196530cefe3b026df7ce729f11b4
 
 The SEO migration adds nullable metadata/Alt Text and a text/html article format marker without rewriting existing content. The activator runs it through the existing forward migration step; no reseed/reset is required. Quill assets ship inside the release, and HTML Purifier is a production Composer dependency.
 
-Keep `SEO_ALLOW_INDEXING=false` on development. The application and Apache staging host header send `noindex, follow`; the dynamic sitemap is empty while indexing is disabled. A later approved production cutover must set the correct `APP_URL` and enable indexing explicitly, then verify Search Console ownership and submit the production sitemap. Installing an HTML verification token in CMS does not itself complete Google's verification. Do not change the main WordPress site or submit the development sitemap as part of a development deploy.
+Keep `SEO_ALLOW_INDEXING=false` on development. The application and Apache staging host header send `noindex, follow`; the dynamic sitemap is empty while indexing is disabled. Production has `APP_URL=https://anare.co.id` and indexing enabled since the cutover. Search Console ownership verification and production sitemap submission remain an owner action; installing an HTML verification token in CMS does not itself complete Google's verification. Never submit the development sitemap.
+
+## Production
+
+Cutover: 11 November 2026, commit `fc618d63d23cd782df4d3af42a9e79ed21c1d101`. The main-domain document root is fixed at `public_html` by cPanel, so production keeps the release-based layout and routes requests internally:
+
+- Releases/current/shared: `/home/anaj8418/anare-prod/{releases,current,shared}`; private `.env` at `shared/.env` (`APP_URL=https://anare.co.id`, `SEO_ALLOW_INDEXING=true`, own `APP_KEY`).
+- Activator: `/home/anaj8418/anare-prod/bin/activate.sh` (outside the FTP inbox, so the deploy FTP account cannot change executed code), run each minute by cron with `ANARE_INBOX=/home/anaj8418/.deploy-anare-prod ANARE_ROOT=/home/anaj8418/anare-prod ANARE_PUBLIC=/home/anaj8418/public_html/anare-prod/public ANARE_HEALTH_URL=https://anare.co.id/up ANARE_HEALTH_RESOLVE=anare.co.id:443:203.175.8.76`. Rollback uses `bin/rollback.sh` with the same variables. FTP account `deployprod@anare.co.id` is restricted to `.deploy-anare-prod`.
+- `public_html/.htaccess` = `deploy/production-root.htaccess`: HTTP and `www` → `https://anare.co.id`, trailing slash removal, `/` → front controller, all other paths → `/anare-prod/public/...` internally. `public_html/anare-prod/.htaccess` = `deploy/production-wrapper.htaccess`: PHP 8.4 handler and 403 for direct `/anare-prod/...` requests. `public_html/anare-prod/public` → `anare-prod/current/public`.
+- Database `anaj8418_anareprod` (user `anaj8418_prod`) was created from the development database at cutover; uploads were copied from development storage. Content edited in development after the cutover does **not** sync to production — edit the live site at `https://anare.co.id/admin`.
+- Production `superadmin` and `admin` passwords were rotated at cutover and are not stored in the repository. Development credentials do not work on production.
+- Former WordPress URLs from `wp-sitemap.xml` redirect with 301 via `config/legacy-redirects.php`. WordPress PHP files are no longer reachable (404).
+
+Backups taken immediately before cutover (in hosting home, private 0600): `pre-production-cutover-20261111111301/` containing `anaj8418_wp633.sql.gz`, `anaj8418_anaredev.sql.gz`, `public_html.tar.gz`, original `public_html.htaccess`, and `SHA256SUMS`. WordPress files were moved, not deleted, to `/home/anaj8418/wordpress-pre-laravel-20261111112502/`; the WordPress database `anaj8418_wp633` is untouched.
+
+Rollback to WordPress: move every entry of `wordpress-pre-laravel-20261111112502/` back into `public_html/` (its `.htaccess` is the original WordPress file), then check `https://anare.co.id/`. Laravel files and the production database stay in place; DNS and mail are unaffected. The private cutover script `/home/anaj8418/anare-prod-setup/cutover.sh` performed the same steps automatically on a failed health check.
+
+Verified after cutover: `/`, `/up`, catalog/detail/article/doctor pages, `/admin/login` and real login with the rotated Super Admin password (CSRF-less POST 419), storage images 200, `http`/`www`/trailing-slash 301s, legacy URL 301s, `wp-login.php`/`wp-config.php`/`.env` 404, direct release path 403, `robots.txt` with production sitemap, 59 sitemap URLs, `index, follow` and canonical `https://anare.co.id/`, `dev.anare.co.id` and webmail 200. Cloudflare DNS (DNS-only, MX/SPF/DKIM) required no changes.

@@ -1,0 +1,9 @@
+# Installed at /home/anaj8418/public_html/anare-prod/.htaccess; public -> /home/anaj8418/anare-prod/current/public.
+Options -Indexes
+# Only internal rewrites from the site root may enter; Laravel's own .htaccess overrides root rewrite rules here.
+<If "%{THE_REQUEST} =~ m#^\S+\s+/+anare-prod(?:[/?\s]|$)#">
+    Require all denied
+</If>
+<IfModule mime_module>
+  AddHandler application/x-httpd-ea-php84___lsphp .php .php8 .phtml
+</IfModule>
